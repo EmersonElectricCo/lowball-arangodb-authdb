@@ -25,7 +25,10 @@ class ClientIDValidator(Validator):
 
     """
     def validate(self, value):
-        pass
+
+        if not isinstance(value, str) or not value:
+            raise ValidationError("Client ID must be a non empty string")
+        return True
 
 
 class TimestampValidator(Validator):
