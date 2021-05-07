@@ -19,7 +19,7 @@ class TestTokenIDValidator:
         with pytest.raises(ValidationError):
             validator.validate(invalid_token_ids)
 
-        re.fullmatch.assert_called_once_with(TOKEN_ID_PATTERN, invalid_token_ids, wrapped_re_fullmatch)
+        re.fullmatch.assert_called_once_with(TOKEN_ID_PATTERN, invalid_token_ids)
 
     def test_validate_returns_true_for_valid_token_ids(self, valid_token_ids, wrapped_re_fullmatch):
         validator = TokenIDValidator()

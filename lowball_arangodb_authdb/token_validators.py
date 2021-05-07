@@ -1,5 +1,6 @@
 from pyArango.validation import Validator, ValidationError
-
+from lowball.models.authentication_models.token import TOKEN_ID_PATTERN
+import re
 
 class TokenIDValidator(Validator):
     """Simple Validator to make sure the token id
@@ -8,7 +9,13 @@ class TokenIDValidator(Validator):
     """
     def validate(self, value):
 
-        pass
+        try:
+            result = re.fullmatch(TOKEN_ID_PATTERN, value)
+        except:
+            result = None
+        if not result:
+            raise ValidationError(f"Token ID Must match {TOKEN_ID_PATTERN}")
+        return True
 
 
 class ClientIDValidator(Validator):
