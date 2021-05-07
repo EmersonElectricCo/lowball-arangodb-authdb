@@ -21,7 +21,7 @@ class TokenIDValidator(Validator):
 class ClientIDValidator(Validator):
     """Simple validator to make sure the
     client id and requesting client id are
-    valid strings
+    valid strings that are nonempty
 
     """
     def validate(self, value):

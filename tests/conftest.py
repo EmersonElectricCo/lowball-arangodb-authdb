@@ -33,3 +33,11 @@ def valid_token_ids(request):
 def wrapped_re_fullmatch(monkeypatch):
 
     monkeypatch.setattr(re, "fullmatch", Mock(wraps=re.fullmatch))
+
+@pytest.fixture(params=[
+    "short_client_id",
+    "different cleint id",
+    "CLINET_DI"
+])
+def nonemptystrings(request):
+    return request.param

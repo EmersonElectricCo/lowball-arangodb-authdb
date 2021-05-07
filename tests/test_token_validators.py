@@ -7,7 +7,8 @@ which returns True or raises a Validation Error
 """
 import pytest
 from pyArango.validation import ValidationError
-from lowball_arangodb_authdb.token_validators import TokenIDValidator
+from lowball_arangodb_authdb.token_validators import TokenIDValidator, ClientIDValidator, TimestampValidator, \
+    RolesValidator
 from lowball.models.authentication_models.token import TOKEN_ID_PATTERN
 import re
 
@@ -30,9 +31,29 @@ class TestTokenIDValidator:
 
 class TestClientIDValidator:
 
-    def test_raises_validation_error_for_invalid_client_ids(self):
+    def test_validate_raises_validation_error_for_non_string_client_ids(self):
 
-        pass
+        validator = ClientIDValidator()
+
+        with pytest.raises(ValidationError):
+            validator.validate(["not", "string"])
+
+        with pytest.raises(ValidationError):
+            validator.validate(None)
+
+        with pytest.raises(ValidationError):
+            validator.validate(12345)
+
+    def test_validate_raises_validation_error_for_empty_client_id(self):
+        validator = ClientIDValidator()
+
+        with pytest.raises(ValidationError):
+            validator.validate("")
+
+    def test_validate_returns_true_for_nonempty_strings(self, nonemptystrings):
+        validator = ClientIDValidator()
+
+        assert validator.validate(nonemptystrings) == True
 
 
 class TestRolesValidator:
