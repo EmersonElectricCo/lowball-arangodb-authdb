@@ -189,3 +189,15 @@ def path_is_not_file(monkeypatch):
 ])
 def invalid_database_name(request):
     return request.param
+
+@pytest.fixture(params=[
+    "Collection",
+    "SystemCollection",
+    "Edges",
+    "",
+    None,
+    ["not", "string"],
+    1
+])
+def invalid_collection_name(request):
+    return request.param

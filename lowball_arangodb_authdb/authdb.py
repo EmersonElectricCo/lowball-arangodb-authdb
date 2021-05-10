@@ -6,6 +6,16 @@ from lowball.models.provider_models import AuthDatabase
 
 class AuthDB(AuthDatabase):
 
+    _RESERVED_DATABASE_NAMES = [
+        "_system"
+    ]
+
+    _RESERVED_COLLECTION_NAMES = [
+        "Collection",
+        "SystemCollection",
+        "Edges"
+    ]
+
     def __init__(self,
                  url="http://127.0.0.1",
                  port=8529,
@@ -94,10 +104,23 @@ class AuthDB(AuthDatabase):
 
     @database_name.setter
     def database_name(self, value):
-        if not value or not isinstance(value, str) or value == "_system":
-            raise ValueError("Database Name must be a non empty string, but cannot be _system")
+        if not value or not isinstance(value, str) or value in self._RESERVED_DATABASE_NAMES:
+            raise ValueError(
+                f"Database Name must be a non empty string, but cannot be one of {self._RESERVED_DATABASE_NAMES}")
 
         self._database_name = value
+
+    @property
+    def collection_name(self):
+        return self._collection_name
+
+    @collection_name.setter
+    def collection_name(self, value):
+        if not value or not isinstance(value, str) or value in self._RESERVED_COLLECTION_NAMES:
+            raise ValueError(
+                f"Collection Name must be a non empty string, but cannot be one of {self._RESERVED_COLLECTION_NAMES}")
+
+        self._collection_name = value
 
     def add_token(self, token_object):
 

@@ -153,10 +153,13 @@ class TestAuthDBInit:
         authdb = AuthDB(database_name=nonemptystrings)
         assert authdb.database_name == nonemptystrings
 
+    def test_validation_of_collection_name_parameter_if_not_string_or_reserved_name(self, invalid_collection_name):
+        with pytest.raises(ValueError):
+            AuthDB(collection_name=invalid_collection_name)
 
-    def test_validation_of_collection_name_parameter(self):
-
-        pass
+    def test_collection_name_when_string_but_not_reserved(self, nonemptystrings):
+        authdb = AuthDB(collection_name=nonemptystrings)
+        assert authdb.collection_name == nonemptystrings
 
     def test_validation_of_index_client_id_parameter(self):
 
