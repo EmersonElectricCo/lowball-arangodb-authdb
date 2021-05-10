@@ -1,3 +1,5 @@
+import pathlib
+
 from lowball.models.authentication_models import Token, valid_token_id
 from lowball.models.provider_models import AuthDatabase
 
@@ -69,6 +71,22 @@ class AuthDB(AuthDatabase):
             raise ValueError("Password must be a string or None")
 
         self._password = value
+
+    @property
+    def verify(self):
+        return self._verify
+
+    @verify.setter
+    def verify(self, value):
+        if isinstance(value, bool):
+            self._verify = value
+        elif isinstance(value, str):
+            path = pathlib.Path(value)
+            if not path.exists() or not path.is_file():
+                raise ValueError("Verify must be a boolean true/false or a valid path to a file on the system")
+            self._verify = value
+        else:
+            raise ValueError("Verify must be a boolean true/false or a valid path to a file on the system")
 
     def add_token(self, token_object):
 
