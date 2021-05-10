@@ -2,7 +2,7 @@ import pathlib
 
 from lowball.models.authentication_models import Token, valid_token_id
 from lowball.models.provider_models import AuthDatabase
-
+from pyArango.connection import Connection
 
 class AuthDB(AuthDatabase):
 
@@ -37,6 +37,13 @@ class AuthDB(AuthDatabase):
         self.index_client_id = index_client_id
 
         AuthDatabase.__init__(self)
+
+        connection = Connection(
+            arangoURL=f"{self.url}:{self.port}",
+            username=self.user,
+            password=self.password,
+            verify=self.verify
+        )
 
     @property
     def url(self):

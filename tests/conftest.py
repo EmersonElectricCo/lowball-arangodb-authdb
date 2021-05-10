@@ -1,5 +1,6 @@
 import pytest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock, MagicMock, call
+from pyArango.connection import Connection
 from datetime import datetime
 import pathlib
 import re
@@ -201,3 +202,29 @@ def invalid_database_name(request):
 ])
 def invalid_collection_name(request):
     return request.param
+
+@pytest.fixture(params=[
+    ("http://127.0.0.1", 443, "lowball", "test", False, "db", "toke", False),
+    ("https://local.arang", 8529, "below", "blaw", True, "daby", "auth", True)
+])
+def init_calls_expected_connection(request):
+
+    url, port, user, pw, verify, db_name, col_name, clid_index = request.param
+
+    return request.param, call(
+        arangoURL=f"{url}:{port}",
+        username=user,
+        password=pw,
+        verify=verify
+    )
+
+@pytest.fixture
+def basic_mock_pyarango(mock_connection):
+
+    pass
+
+@pytest.fixture
+def mock_connection(monkeypatch):
+
+    monkeypatch.setattr(Connection, "__init__", Mock(return_value=None))
+
