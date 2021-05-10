@@ -119,9 +119,13 @@ class TestAuthDBInit:
         authdb = AuthDB(user=nonemptystrings)
         assert authdb.user == nonemptystrings
 
-    def test_validation_of_arango_password_parameter_is_string_or_none(self):
+    def test_validation_of_arango_password_parameter_is_string_or_none(self, just_not_string):
+        with pytest.raises(ValueError):
+            AuthDB(password=just_not_string)
 
-        pass
+    def test_arango_password_no_error_when_string_or_none(self, string_or_none):
+        authdb = AuthDB(password=string_or_none)
+        assert authdb.password == string_or_none
 
     def test_validation_of_verify_parameter(self):
 

@@ -59,6 +59,17 @@ class AuthDB(AuthDatabase):
             raise ValueError("User must be a nonempty string")
         self._user = value
 
+    @property
+    def password(self):
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        if not (value is None or isinstance(value, str)):
+            raise ValueError("Password must be a string or None")
+
+        self._password = value
+
     def add_token(self, token_object):
 
         pass

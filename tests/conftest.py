@@ -128,3 +128,19 @@ def valid_ports(request):
 ])
 def not_strings_or_empty(request):
     return request.param
+
+
+@pytest.fixture(params=[
+    ["not", "string"],
+    1234
+])
+def just_not_string(request):
+    return request.param
+
+@pytest.fixture(params=[
+    "",
+    "12345",
+    None
+])
+def string_or_none(request):
+    return request.param
