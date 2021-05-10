@@ -4,9 +4,40 @@ from lowball.models.provider_models import AuthDatabase
 
 class AuthDB(AuthDatabase):
 
-    def __init__(self):
+    def __init__(self,
+                 url="http://127.0.0.1",
+                 port=8529,
+                 user="root",
+                 password=None,
+                 verify=True,
+                 database_name="lowball_authdb",
+                 collection_name="authentication_tokens",
+                 index_client_id=False
+                 ):
+
+        self.url = url
+        self.port = port
+        self.user = user
+        self.password = password
+        self.verify = verify
+        self.database_name = database_name
+        self.collection_name = collection_name
+        self.index_client_id = index_client_id
 
         AuthDatabase.__init__(self)
+
+    @property
+    def url(self):
+        return self._url
+
+    @url.setter
+    def url(self, value):
+        if not value or not isinstance(value, str):
+            raise ValueError("Url must be a nonempty string beginning with (http:// or https://")
+        if not (value.startswith("http://") or value.startswith("https://")):
+            raise ValueError("Url must be a nonempty string beginning with (http:// or https://")
+
+        self._url = value
 
     def add_token(self, token_object):
 

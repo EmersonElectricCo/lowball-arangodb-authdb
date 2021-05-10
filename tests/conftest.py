@@ -74,6 +74,16 @@ def invalid_datetimes(request):
 
     return request.param
 
+@pytest.fixture(
+    params=[
+        ["not", "string"],
+        1234,
+        "string.but.missing.specifier",
+        "",
+        None
 
-
+    ]
+)
+def invalid_urls(request):
+    return request.param
 

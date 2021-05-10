@@ -1,3 +1,4 @@
+import pytest
 
 from lowball_arangodb_authdb.authdb import AuthDB
 
@@ -65,7 +66,7 @@ class TestAuthDBInit:
         assert authdb.user == "root"
         assert authdb.password == None
         assert authdb.verify == True
-        assert authdb.database_name == "lowball"
+        assert authdb.database_name == "lowball_authdb"
         assert authdb.collection_name == "authentication_tokens"
         assert authdb.index_client_id == False
 
@@ -92,9 +93,11 @@ class TestAuthDBInit:
         assert authdb.index_client_id == True
 
 
-    def test_validation_of_arango_url_parameter(self):
+    # test validation of arango url parameter beyond making sure it's a string with http/https in front
+    def test_arango_url_error_if_not_string_or_missing_http_specifier(self, invalid_urls):
 
-        pass
+        with pytest.raises(ValueError):
+            AuthDB(url=invalid_urls)
 
     def test_validation_of_arango_port_parameter(self):
 
