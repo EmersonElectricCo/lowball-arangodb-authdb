@@ -16,12 +16,12 @@ class TestAuthDBInit:
         collection_name="authentication_tokens"
         index_client_id=True
 
-    arango_url should include http:// or https://
+    arango_url should include http:// or https://, i think we rely on the connection class to validate any further here
 
     arango_port should be valid integer
 
-    user: string
-    password: string
+    user: string (non empty)
+    password: string/none
 
     verify: boolean OR string -> path to ca
 
@@ -33,7 +33,8 @@ class TestAuthDBInit:
 
     _key = token id
 
-    I think we can keep this implementation low level
+    I think we can keep this implementation low level meaning, not creating high level of abstraction. Tokens should
+    be immutable once created
 
     index client id would allow faster lookups by client id for tokens
     The collection will be used to hold token documents, organized by tokenid
@@ -120,39 +121,112 @@ class TestAuthDBInit:
 
 class TestAddToken:
 
-    pass
+    def test_error_when_not_given_token_object(self):
+
+        pass
+
+    def test_failure_when_token_already_exists(self):
+
+        pass
+
+    def test_add_token_calls_create_document_with_token_dictionary(self):
+
+        pass
+
+    def test_add_token_sets_new_document_key_to_token_id_and_saves(self):
+
+        pass
 
 
 class TestLookupToken:
 
-    pass
+    def test_returns_none_when_token_not_found(self):
+
+        pass
+
+    def test_deletes_token_if_token_information_cannot_be_loaded_into_token_when_found(self):
+        pass
+
+    def test_returns_token_object_when_token_document_found(self):
+
+        pass
 
 
 class TestRevokeToken:
 
-    pass
+    def test_returns_none_when_token_not_found(self):
+        pass
+
+    def test_calls_delete_on_token_document_when_found(self):
+        pass
 
 
 class TestRevokeAll:
 
-    pass
+    def test_calls_delete_on_each_document_in_the_database(self):
+
+        pass
 
 
 class TestListTokens:
 
-    pass
+    def test_returns_list_of_token_objects(self):
+
+        pass
+
+    def test_returns_all_documents_in_the_database_as_token_objects(self):
+
+        pass
+
 
 
 class TestListTokensByClientID:
+    """Should expect an aql query here.
+    We will probably build a constructor utility function to build it properly
 
-    pass
+    I know we want to parameterize the query
+
+    """
+
+    def test_returns_list_of_token_objects(self):
+        pass
+
+    def test_all_tokens_in_list_are_owned_by_the_specified_client_id(self):
+        """Not sure we can test this properly, as the actual filtering is done on the arango side
+
+        all we can test is calling the query correctly
+
+        """
+        pass
+
+    def test_aql_query_called_with_correct_inputs(self):
+
+        pass
 
 
 class TestListTokensByRole:
+    """This may be an aql queryable option as well, will hae to investigate
 
-    pass
+    """
+    def test_returns_list_of_token_objects(self):
+        pass
+
+    def test_all_tokens_in_list_possess_the_requested_role(self):
+
+        pass
+
+    def test_aql_query_called_with_correct_inputs(self):
+        pass
 
 
 class TestCleanupTokens:
+    """i believe this is again an aql query we can do
 
-    pass
+    """
+    def test_calls_delete_on_all_tokens_which_are_expired(self):
+
+        pass
+
+    def test_aql_query_called_with_correct_inputs(self):
+
+        pass
