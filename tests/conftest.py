@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import Mock, MagicMock
+from datetime import datetime
 import re
 
 @pytest.fixture(params=[
@@ -41,3 +42,40 @@ def wrapped_re_fullmatch(monkeypatch):
 ])
 def nonemptystrings(request):
     return request.param
+
+
+@pytest.fixture(params=[
+    [],
+    ["r1", "r2", "r3"],
+    ["r1"]
+])
+def valid_roles(request):
+    return request.param
+
+
+@pytest.fixture(params=[
+    "2020-05-10 10:20:30",
+    "1991-05-02 16:30:00",
+    "2030-12-31 00:00:00"
+])
+def valid_datetimes(request):
+
+    return request.param
+
+
+
+@pytest.fixture(params=[
+    "not even close",
+    "2020:10:4T00:00:00",
+    "2020-13-4 00:00:00",
+    "2020-11-4 25:00:00"
+])
+def invalid_datetimes(request):
+
+    return request.param
+
+@pytest.fixture
+def wrapped_strftime(monkeypatch):
+
+    monkeypatch.setattr(datetime, "strftime", Mock(wraps=datetime.strftime))
+

@@ -9,8 +9,9 @@ import pytest
 from pyArango.validation import ValidationError
 from lowball_arangodb_authdb.token_validators import TokenIDValidator, ClientIDValidator, TimestampValidator, \
     RolesValidator
-from lowball.models.authentication_models.token import TOKEN_ID_PATTERN
+from lowball.models.authentication_models.token import TOKEN_ID_PATTERN, Token
 import re
+from datetime import datetime
 
 class TestTokenIDValidator:
 
@@ -58,11 +59,69 @@ class TestClientIDValidator:
 
 class TestRolesValidator:
 
-    pass
+    def test_validate_raises_validation_error_when_roles_is_not_list(self):
+
+        validator = RolesValidator()
+
+        with pytest.raises(ValidationError):
+            validator.validate(None)
+
+        with pytest.raises(ValidationError):
+            validator.validate(1234)
+
+        with pytest.raises(ValidationError):
+            validator.validate("still not a list")
+
+    def test_validate_raises_validation_error_when_roles_in_list_are_not_strings(self):
+        validator = RolesValidator()
+
+
+        with pytest.raises(ValidationError):
+            validator.validate([1,2,3,4])
+
+        with pytest.raises(ValidationError):
+            validator.validate(["string", "string again", 1])
+
+    def test_validate_returns_true_for_list_of_strings_or_empty_list(self, valid_roles):
+        validator = RolesValidator()
+
+        assert validator.validate(valid_roles) == True
 
 
 class TestTimestampValidator:
 
-    pass
+    # From lowball.models.authentication_models.token.Token
+
+
+    FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+    def test_validate_raises_validation_error_when_value_not_string(self):
+        validator = TimestampValidator()
+
+        with pytest.raises(ValidationError):
+            validator.validate(["not", "string"])
+
+        with pytest.raises(ValidationError):
+            validator.validate(None)
+
+        with pytest.raises(ValidationError):
+            validator.validate(12345)
+
+    def test_validate_raises_validation_error_when_string_is_incorrect_date_format(self, invalid_datetimes, wrapped_strftime):
+        validator = TimestampValidator()
+
+        with pytest.raises(ValidationError):
+            validator.validate(invalid_datetimes)
+
+        datetime.strftime.assert_called_once_with(invalid_datetimes, self.FORMAT)
+
+
+    def test_validate_returns_true_for_strings_with_correct_date_format(self, valid_datetimes, wrapped_strftime):
+
+        validator = TimestampValidator()
+
+        assert validator.validate(valid_datetimes) == True
+        datetime.strftime.assert_called_once_with(valid_datetimes, self.FORMAT)
 
 
