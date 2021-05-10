@@ -145,8 +145,14 @@ class TestAuthDBInit:
         authdb = AuthDB(verify=valid_verify)
         assert authdb.verify == valid_verify
 
-    def test_validation_of_database_name_parameter(self):
-        pass
+    def test_validation_of_database_name_parameter_if_not_string_or_system_db(self, invalid_database_name):
+        with pytest.raises(ValueError):
+            AuthDB(database_name=invalid_database_name)
+
+    def test_database_name_when_string_but_not_system(self, nonemptystrings):
+        authdb = AuthDB(database_name=nonemptystrings)
+        assert authdb.database_name == nonemptystrings
+
 
     def test_validation_of_collection_name_parameter(self):
 

@@ -180,3 +180,12 @@ def path_is_file(monkeypatch):
 def path_is_not_file(monkeypatch):
     monkeypatch.setattr(pathlib.Path, "is_file", Mock(return_value=False))
 
+@pytest.fixture(params=[
+    "_system",
+    "",
+    None,
+    ["not", "string"],
+    1
+])
+def invalid_database_name(request):
+    return request.param

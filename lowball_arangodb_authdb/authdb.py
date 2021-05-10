@@ -88,6 +88,17 @@ class AuthDB(AuthDatabase):
         else:
             raise ValueError("Verify must be a boolean true/false or a valid path to a file on the system")
 
+    @property
+    def database_name(self):
+        return self._database_name
+
+    @database_name.setter
+    def database_name(self, value):
+        if not value or not isinstance(value, str) or value == "_system":
+            raise ValueError("Database Name must be a non empty string, but cannot be _system")
+
+        self._database_name = value
+
     def add_token(self, token_object):
 
         pass
