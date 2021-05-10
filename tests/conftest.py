@@ -74,8 +74,4 @@ def invalid_datetimes(request):
 
     return request.param
 
-@pytest.fixture
-def wrapped_strftime(monkeypatch):
-
-    monkeypatch.setattr(datetime, "strftime", Mock(wraps=datetime.strftime))
 

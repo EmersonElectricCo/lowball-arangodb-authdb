@@ -92,9 +92,7 @@ class TestTimestampValidator:
 
     # From lowball.models.authentication_models.token.Token
 
-
     FORMAT = "%Y-%m-%d %H:%M:%S"
-
 
     def test_validate_raises_validation_error_when_value_not_string(self):
         validator = TimestampValidator()
@@ -108,20 +106,16 @@ class TestTimestampValidator:
         with pytest.raises(ValidationError):
             validator.validate(12345)
 
-    def test_validate_raises_validation_error_when_string_is_incorrect_date_format(self, invalid_datetimes, wrapped_strftime):
+    def test_validate_raises_validation_error_when_string_is_incorrect_date_format(self, invalid_datetimes):
         validator = TimestampValidator()
 
         with pytest.raises(ValidationError):
             validator.validate(invalid_datetimes)
 
-        datetime.strftime.assert_called_once_with(invalid_datetimes, self.FORMAT)
-
-
-    def test_validate_returns_true_for_strings_with_correct_date_format(self, valid_datetimes, wrapped_strftime):
+    def test_validate_returns_true_for_strings_with_correct_date_format(self, valid_datetimes):
 
         validator = TimestampValidator()
 
         assert validator.validate(valid_datetimes) == True
-        datetime.strftime.assert_called_once_with(valid_datetimes, self.FORMAT)
 
 
