@@ -127,9 +127,23 @@ class TestAuthDBInit:
         authdb = AuthDB(password=string_or_none)
         assert authdb.password == string_or_none
 
-    def test_validation_of_verify_parameter(self):
+    def test_validation_of_verify_parameter_when_not_bool_or_string_path_file(self, not_bool_or_string_path):
+        with pytest.raises(ValueError):
+            AuthDB(verify=not_bool_or_string_path)
 
-        pass
+    def test_validation_of_verify_parameter_when_path_does_not_exist(self, path_does_not_exist):
+
+        with pytest.raises(ValueError):
+            AuthDB(verify="/non_existent/path")
+
+    def test_validation_of_verify_parameter_when_path_does_exist_but_is_not_a_file(self, path_does_exist, path_is_not_file):
+        with pytest.raises(ValueError):
+            AuthDB(verify="/non_existent/file_path")
+
+    def test_verify_no_error_when_bool_or_string_path_that_exists(self, valid_verify):
+
+        authdb = AuthDB(verify=valid_verify)
+        assert authdb.verify == valid_verify
 
     def test_validation_of_database_name_parameter(self):
         pass

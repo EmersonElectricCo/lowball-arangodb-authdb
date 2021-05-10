@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import Mock, MagicMock
 from datetime import datetime
+import pathlib
 import re
 
 @pytest.fixture(params=[
@@ -144,3 +145,38 @@ def just_not_string(request):
 ])
 def string_or_none(request):
     return request.param
+
+@pytest.fixture(params=[
+    50,
+    "not string path",
+    ["not", "bool"]
+])
+def not_bool_or_string_path(request):
+    return request.param
+
+@pytest.fixture(params=[
+    "/path/to/file.ca",
+    "/another/path",
+    True,
+    False
+])
+def valid_verify(request, path_does_exist, path_is_file):
+    return request.param
+
+@pytest.fixture
+def path_does_not_exist(monkeypatch):
+
+    monkeypatch.setattr(pathlib.Path, "exists", Mock(return_value=False))
+
+@pytest.fixture
+def path_does_exist(monkeypatch):
+    monkeypatch.setattr(pathlib.Path, "exists", Mock(return_value=True))
+
+@pytest.fixture
+def path_is_file(monkeypatch):
+    monkeypatch.setattr(pathlib.Path, "is_file", Mock(return_value=True))
+
+@pytest.fixture
+def path_is_not_file(monkeypatch):
+    monkeypatch.setattr(pathlib.Path, "is_file", Mock(return_value=False))
+
