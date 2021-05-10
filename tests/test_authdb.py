@@ -161,9 +161,22 @@ class TestAuthDBInit:
         authdb = AuthDB(collection_name=nonemptystrings)
         assert authdb.collection_name == nonemptystrings
 
-    def test_validation_of_index_client_id_parameter(self):
+    def test_validation_of_index_client_id_if_not_bool(self):
+        with pytest.raises(ValueError):
+            AuthDB(index_client_id="string")
 
-        pass
+        with pytest.raises(ValueError):
+            AuthDB(index_client_id=1)
+
+        with pytest.raises(ValueError):
+            AuthDB(index_client_id=[])
+
+    def test_validation_of_index_client_id_if_bool(self):
+        authdb = AuthDB(index_client_id=True)
+        assert authdb.index_client_id == True
+
+        authdb = AuthDB(index_client_id=False)
+        assert authdb.index_client_id == False
 
     def test_arango_connection_created_correctly(self):
 

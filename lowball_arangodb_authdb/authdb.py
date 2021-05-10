@@ -122,6 +122,17 @@ class AuthDB(AuthDatabase):
 
         self._collection_name = value
 
+    @property
+    def index_client_id(self):
+        return self._index_client_id
+
+    @index_client_id.setter
+    def index_client_id(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("index client id must be a bool (true/false)")
+
+        self._index_client_id = value
+
     def add_token(self, token_object):
 
         pass
