@@ -88,6 +88,15 @@ def invalid_urls(request):
     return request.param
 
 @pytest.fixture(params=[
+    "http://127.0.0.1",
+    "https://127.0.0.1",
+    "https://any.string"
+])
+def valid_urls(request):
+
+    return request.param
+
+@pytest.fixture(params=[
     "not integer",
     "40",
     0,
@@ -98,4 +107,24 @@ def invalid_urls(request):
 ])
 def invalid_ports(request):
 
+    return request.param
+
+@pytest.fixture(params=[
+    80,
+    443,
+    8529,
+    8443,
+    8080,
+    1,
+    65535
+])
+def valid_ports(request):
+    return request.param
+
+@pytest.fixture(params=[
+    "",
+    ["not", "a", "string"],
+    None
+])
+def not_strings_or_empty(request):
     return request.param

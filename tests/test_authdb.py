@@ -99,16 +99,27 @@ class TestAuthDBInit:
         with pytest.raises(ValueError):
             AuthDB(url=invalid_urls)
 
+    def test_arango_url_no_error_if_set_correctly(self, valid_urls):
+        authdb = AuthDB(url=valid_urls)
+        assert authdb.url == valid_urls
 
     def test_validation_of_arango_port_parameter_as_integer_as_valid_port_number(self, invalid_ports):
         with pytest.raises(ValueError):
             AuthDB(port=invalid_ports)
 
-    def test_validation_of_arango_user_parameter(self):
+    def test_arango_port_no_error_when_correct_ports(self, valid_ports):
+        authdb = AuthDB(port=valid_ports)
+        assert authdb.port == valid_ports
 
-        pass
+    def test_validation_of_arango_user_parameter_nonempty_string(self, not_strings_or_empty):
+        with pytest.raises(ValueError):
+            AuthDB(user=not_strings_or_empty)
 
-    def test_validation_of_arango_password_parameter(self):
+    def test_arango_user_no_error_when_nonempty_string(self, nonemptystrings):
+        authdb = AuthDB(user=nonemptystrings)
+        assert authdb.user == nonemptystrings
+
+    def test_validation_of_arango_password_parameter_is_string_or_none(self):
 
         pass
 

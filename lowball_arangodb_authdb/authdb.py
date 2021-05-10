@@ -49,6 +49,16 @@ class AuthDB(AuthDatabase):
             raise ValueError("Port must be an integer with values from 1-65535")
         self._port = value
 
+    @property
+    def user(self):
+        return self._user
+
+    @user.setter
+    def user(self, value):
+        if not value or not isinstance(value, str):
+            raise ValueError("User must be a nonempty string")
+        self._user = value
+
     def add_token(self, token_object):
 
         pass
