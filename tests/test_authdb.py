@@ -99,9 +99,10 @@ class TestAuthDBInit:
         with pytest.raises(ValueError):
             AuthDB(url=invalid_urls)
 
-    def test_validation_of_arango_port_parameter(self):
 
-        pass
+    def test_validation_of_arango_port_parameter_as_integer_as_valid_port_number(self, invalid_ports):
+        with pytest.raises(ValueError):
+            AuthDB(port=invalid_ports)
 
     def test_validation_of_arango_user_parameter(self):
 

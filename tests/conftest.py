@@ -87,3 +87,15 @@ def invalid_datetimes(request):
 def invalid_urls(request):
     return request.param
 
+@pytest.fixture(params=[
+    "not integer",
+    "40",
+    0,
+    70000,
+    65536,
+    7.2,
+    None
+])
+def invalid_ports(request):
+
+    return request.param

@@ -39,6 +39,16 @@ class AuthDB(AuthDatabase):
 
         self._url = value
 
+    @property
+    def port(self):
+        return self._port
+
+    @port.setter
+    def port(self, value):
+        if not isinstance(value, int) or value not in range(1, 65536):
+            raise ValueError("Port must be an integer with values from 1-65535")
+        self._port = value
+
     def add_token(self, token_object):
 
         pass
