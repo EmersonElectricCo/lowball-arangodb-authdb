@@ -1,4 +1,6 @@
 
+from lowball_arangodb_authdb.authdb import AuthDB
+
 class TestAuthDBInit:
     """Tests:
 
@@ -53,9 +55,42 @@ class TestAuthDBInit:
     Looks like to preserve structure we need to restrict their names from Collection, SystemCollection, and Edges,
     but anything else is fair game
     """
+
+    def test_init_sets_expected_defaults(self):
+
+        authdb = AuthDB()
+
+        assert authdb.url == "http://127.0.0.1"
+        assert authdb.port == 8529
+        assert authdb.user == "root"
+        assert authdb.password == None
+        assert authdb.verify == True
+        assert authdb.database_name == "lowball"
+        assert authdb.collection_name == "authentication_tokens"
+        assert authdb.index_client_id == False
+
     def test_init_accepts_expected_kwargs(self):
 
-        pass
+        authdb = AuthDB(
+            url="https://local.arango",
+            port=8080,
+            user="lowball",
+            password="supersafe",
+            verify=False,
+            database_name="authdb",
+            collection_name="token_store",
+            index_client_id=True
+        )
+
+        assert authdb.url == "https://local.arango"
+        assert authdb.port == 8080
+        assert authdb.user == "lowball"
+        assert authdb.password == "supersafe"
+        assert authdb.verify == False
+        assert authdb.database_name == "authdb"
+        assert authdb.collection_name == "token_store"
+        assert authdb.index_client_id == True
+
 
     def test_validation_of_arango_url_parameter(self):
 
