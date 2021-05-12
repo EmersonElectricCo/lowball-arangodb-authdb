@@ -4,6 +4,9 @@ from lowball_arangodb_authdb.authdb import AuthDB
 from unittest.mock import call
 import pyArango
 from pyArango.connection import Connection
+from pyArango.collection import Collection
+from pyArango.database import Database
+from pyArango.document import Document
 
 class TestAuthDBInit:
     """Tests:
@@ -235,7 +238,7 @@ class TestAuthDBInit:
 
     def test_arango_connection_created_correctly(self, mock_pyarango, init_calls_expected_connection,
                                                  basic_mock_pyarango,
-                                                 basic_mock_connection_init):
+                                                 basic_mock_connection):
 
         params, expected_call = init_calls_expected_connection
 
@@ -246,13 +249,24 @@ class TestAuthDBInit:
     def test_authentication_database_created_if_not_present(self,
                                                             mock_pyarango,
                                                             basic_mock_connection_get_item_db_not_present,
-                                                            basic_mock_connection_init):
+                                                            basic_db_name):
 
-        pass
+        authdb = AuthDB(database_name=basic_db_name)
+        authdb.connection.__getitem__.assert_called_once_with(basic_db_name)
+        authdb.connection.createDatabase.assert_called_once_with(name=basic_db_name)
 
-    def test_authentication_database_accessed_if_present(self):
+        assert isinstance(authdb.database, Database)
+        assert authdb.database.name == basic_db_name
 
-        pass
+    def test_authentication_database_accessed_if_present(self,
+                                                         mock_pyarango,
+                                                         basic_db_name,
+                                                         mock_connection_get_item_db_present):
+        authdb = AuthDB(database_name=basic_db_name)
+        authdb.connection.__getitem__.assert_called_once_with(basic_db_name)
+
+        assert isinstance(authdb.database, Database)
+        assert authdb.database.name == basic_db_name
 
     def test_authentication_collection_created_if_not_present(self):
 

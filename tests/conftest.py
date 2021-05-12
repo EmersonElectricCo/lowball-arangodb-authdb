@@ -223,6 +223,9 @@ def init_calls_expected_connection(request):
         verify=verify
     )
 
+@pytest.fixture
+def basic_db_name():
+    return 'test'
 
 class TestMockConnection(Connection):
 
@@ -242,7 +245,7 @@ class TestMockDocument(Document):
     pass
 
 @pytest.fixture
-def basic_mock_pyarango(basic_mock_connection_init):
+def basic_mock_pyarango(basic_mock_connection, basic_mock_database):
 
     pass
 
@@ -255,16 +258,32 @@ def mock_pyarango(monkeypatch):
     monkeypatch.setattr(lowball_arangodb_authdb.authdb, "Document", TestMockDocument)
 
 @pytest.fixture
-def basic_mock_connection_init(monkeypatch):
+def basic_mock_connection(monkeypatch):
 
     monkeypatch.setattr(TestMockConnection, "__init__", Mock(return_value=None))
+    monkeypatch.setattr(TestMockConnection, "createDatabase", Mock(return_value=Mock()))
+    monkeypatch.setattr(TestMockConnection, "__getitem__", Mock(return_value=None))
 
 @pytest.fixture
-def basic_mock_connection_get_item_db_not_present(monkeypatch):
+def basic_mock_database(monkeypatch):
+
+    monkeypatch.setattr(TestMockDatabase, "__init__", Mock(return_value=None))
+
+@pytest.fixture
+def basic_mock_connection_get_item_db_not_present(monkeypatch, basic_db_name):
 
     mock = Mock()
     mock.side_effect = KeyError()
+    TestMockDatabase.name = basic_db_name
     monkeypatch.setattr(TestMockDatabase, "__init__", Mock(return_value=None))
+    monkeypatch.setattr(TestMockConnection, "__init__", Mock(return_value=None))
     monkeypatch.setattr(TestMockConnection, "__getitem__", mock)
-    monkeypatch.setattr(TestMockConnection, "createDatabase", Mock(return_value=TestMockDatabase(connection=Mock(), name="test")))
+    monkeypatch.setattr(TestMockConnection, "createDatabase", Mock(return_value=TestMockDatabase(connection=Mock(), name=basic_db_name)))
+
+@pytest.fixture
+def mock_connection_get_item_db_present(monkeypatch, basic_db_name):
+    TestMockDatabase.name = basic_db_name
+    monkeypatch.setattr(TestMockDatabase, "__init__", Mock(return_value=None))
+    monkeypatch.setattr(TestMockConnection, "__init__", Mock(return_value=None))
+    monkeypatch.setattr(TestMockConnection, "__getitem__", Mock(return_value=TestMockDatabase(connection=Mock(), name=basic_db_name)))
 

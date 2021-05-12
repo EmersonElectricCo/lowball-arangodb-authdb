@@ -50,6 +50,13 @@ class AuthDB(AuthDatabase):
             verify=self.verify
         )
 
+        try:
+            self.database = self.connection[self.database_name]
+        except KeyError:
+            self.database = self.connection.createDatabase(name=self.database_name)
+
+
+
     @property
     def url(self):
         return self._url
