@@ -3,6 +3,7 @@ import pytest
 from lowball_arangodb_authdb.authdb import AuthDB
 from unittest.mock import call
 import pyArango
+from pyArango.connection import Connection
 
 class TestAuthDBInit:
     """Tests:
@@ -59,7 +60,7 @@ class TestAuthDBInit:
     but anything else is fair game
     """
 
-    def test_init_sets_expected_defaults(self, basic_mock_pyarango):
+    def test_init_sets_expected_defaults(self, basic_mock_pyarango, mock_pyarango):
 
         authdb = AuthDB()
 
@@ -72,7 +73,7 @@ class TestAuthDBInit:
         assert authdb.collection_name == "authentication_tokens"
         assert authdb.index_client_id == False
 
-    def test_init_accepts_expected_kwargs(self, basic_mock_pyarango):
+    def test_init_accepts_expected_kwargs(self, basic_mock_pyarango, mock_pyarango):
 
         authdb = AuthDB(
             url="https://local.arango",
@@ -97,6 +98,7 @@ class TestAuthDBInit:
     # test validation of arango url parameter beyond making sure it's a string with http/https in front
     def test_arango_url_error_if_not_string_or_missing_http_specifier(self,
                                                                       invalid_urls,
+                                                                      mock_pyarango,
                                                                       basic_mock_pyarango):
 
         with pytest.raises(ValueError):
@@ -104,54 +106,63 @@ class TestAuthDBInit:
 
     def test_arango_url_no_error_if_set_correctly(self,
                                                   valid_urls,
+                                                  mock_pyarango,
                                                   basic_mock_pyarango):
         authdb = AuthDB(url=valid_urls)
         assert authdb.url == valid_urls
 
     def test_validation_of_arango_port_parameter_as_integer_as_valid_port_number(self,
                                                                                  invalid_ports,
+                                                                                 mock_pyarango,
                                                                                  basic_mock_pyarango):
         with pytest.raises(ValueError):
             AuthDB(port=invalid_ports)
 
     def test_arango_port_no_error_when_correct_ports(self,
                                                      valid_ports,
+                                                     mock_pyarango,
                                                      basic_mock_pyarango):
         authdb = AuthDB(port=valid_ports)
         assert authdb.port == valid_ports
 
     def test_validation_of_arango_user_parameter_nonempty_string(self,
                                                                  not_strings_or_empty,
+                                                                 mock_pyarango,
                                                                  basic_mock_pyarango):
         with pytest.raises(ValueError):
             AuthDB(user=not_strings_or_empty)
 
     def test_arango_user_no_error_when_nonempty_string(self,
                                                        nonemptystrings,
+                                                       mock_pyarango,
                                                        basic_mock_pyarango):
         authdb = AuthDB(user=nonemptystrings)
         assert authdb.user == nonemptystrings
 
     def test_validation_of_arango_password_parameter_is_string_or_none(self,
                                                                        just_not_string,
+                                                                       mock_pyarango,
                                                                        basic_mock_pyarango):
         with pytest.raises(ValueError):
             AuthDB(password=just_not_string)
 
     def test_arango_password_no_error_when_string_or_none(self,
                                                           string_or_none,
+                                                          mock_pyarango,
                                                           basic_mock_pyarango):
         authdb = AuthDB(password=string_or_none)
         assert authdb.password == string_or_none
 
     def test_validation_of_verify_parameter_when_not_bool_or_string_path_file(self,
                                                                               not_bool_or_string_path,
+                                                                              mock_pyarango,
                                                                               basic_mock_pyarango):
         with pytest.raises(ValueError):
             AuthDB(verify=not_bool_or_string_path)
 
     def test_validation_of_verify_parameter_when_path_does_not_exist(self,
                                                                      path_does_not_exist,
+                                                                     mock_pyarango,
                                                                      basic_mock_pyarango):
 
         with pytest.raises(ValueError):
@@ -160,12 +171,14 @@ class TestAuthDBInit:
     def test_validation_of_verify_parameter_when_path_does_exist_but_is_not_a_file(self,
                                                                                    path_does_exist,
                                                                                    path_is_not_file,
+                                                                                   mock_pyarango,
                                                                                    basic_mock_pyarango):
         with pytest.raises(ValueError):
             AuthDB(verify="/non_existent/file_path")
 
     def test_verify_no_error_when_bool_or_string_path_that_exists(self,
                                                                   valid_verify,
+                                                                  mock_pyarango,
                                                                   basic_mock_pyarango):
 
         authdb = AuthDB(verify=valid_verify)
@@ -173,29 +186,34 @@ class TestAuthDBInit:
 
     def test_validation_of_database_name_parameter_if_not_string_or_system_db(self,
                                                                               invalid_database_name,
+                                                                              mock_pyarango,
                                                                               basic_mock_pyarango):
         with pytest.raises(ValueError):
             AuthDB(database_name=invalid_database_name)
 
     def test_database_name_when_string_but_not_system(self,
                                                       nonemptystrings,
+                                                      mock_pyarango,
                                                       basic_mock_pyarango):
         authdb = AuthDB(database_name=nonemptystrings)
         assert authdb.database_name == nonemptystrings
 
     def test_validation_of_collection_name_parameter_if_not_string_or_reserved_name(self,
                                                                                     invalid_collection_name,
+                                                                                    mock_pyarango,
                                                                                     basic_mock_pyarango):
         with pytest.raises(ValueError):
             AuthDB(collection_name=invalid_collection_name)
 
     def test_collection_name_when_string_but_not_reserved(self,
-                                                          basic_mock_pyarango,
-                                                          nonemptystrings):
+                                                          mock_pyarango,
+                                                          nonemptystrings,
+                                                          basic_mock_pyarango):
         authdb = AuthDB(collection_name=nonemptystrings)
         assert authdb.collection_name == nonemptystrings
 
     def test_validation_of_index_client_id_if_not_bool(self,
+                                                       mock_pyarango,
                                                        basic_mock_pyarango):
         with pytest.raises(ValueError):
             AuthDB(index_client_id="string")
@@ -207,6 +225,7 @@ class TestAuthDBInit:
             AuthDB(index_client_id=[])
 
     def test_validation_of_index_client_id_if_bool(self,
+                                                   mock_pyarango,
                                                    basic_mock_pyarango):
         authdb = AuthDB(index_client_id=True)
         assert authdb.index_client_id == True
@@ -214,20 +233,20 @@ class TestAuthDBInit:
         authdb = AuthDB(index_client_id=False)
         assert authdb.index_client_id == False
 
-    def test_arango_connection_created_correctly(self, basic_mock_pyarango, init_calls_expected_connection):
+    def test_arango_connection_created_correctly(self, mock_pyarango, init_calls_expected_connection,
+                                                 basic_mock_pyarango,
+                                                 basic_mock_connection_init):
 
         params, expected_call = init_calls_expected_connection
 
         auth_db = AuthDB(*params)
 
-        pyArango.connection.Connection.__init__.assert_has_calls([expected_call])
+        auth_db.connection.__init__.assert_has_calls([expected_call])
 
-
-    def test_failure_cases_for_arango_connection(self):
-
-        pass
-
-    def test_authentication_database_created_if_not_present(self):
+    def test_authentication_database_created_if_not_present(self,
+                                                            mock_pyarango,
+                                                            basic_mock_connection_get_item_db_not_present,
+                                                            basic_mock_connection_init):
 
         pass
 

@@ -3,6 +3,11 @@ import pathlib
 from lowball.models.authentication_models import Token, valid_token_id
 from lowball.models.provider_models import AuthDatabase
 from pyArango.connection import Connection
+from pyArango.collection import Collection
+from pyArango.database import Database
+from pyArango.document import Document
+from pyArango.theExceptions import DocumentNotFoundError
+
 
 class AuthDB(AuthDatabase):
 
@@ -38,7 +43,7 @@ class AuthDB(AuthDatabase):
 
         AuthDatabase.__init__(self)
 
-        connection = Connection(
+        self.connection = Connection(
             arangoURL=f"{self.url}:{self.port}",
             username=self.user,
             password=self.password,

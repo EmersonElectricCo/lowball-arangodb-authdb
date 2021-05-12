@@ -1,6 +1,11 @@
 import pytest
 from unittest.mock import Mock, MagicMock, call
 from pyArango.connection import Connection
+from pyArango.collection import Collection
+from pyArango.document import Document
+import pyArango
+from pyArango.database import Database
+import lowball_arangodb_authdb.authdb
 from datetime import datetime
 import pathlib
 import re
@@ -218,13 +223,48 @@ def init_calls_expected_connection(request):
         verify=verify
     )
 
-@pytest.fixture
-def basic_mock_pyarango(mock_connection):
+
+class TestMockConnection(Connection):
+
+    pass
+
+class TestMockDatabase(Database):
+
+    pass
+
+
+class TestMockCollection(Collection):
+
+    pass
+
+class TestMockDocument(Document):
 
     pass
 
 @pytest.fixture
-def mock_connection(monkeypatch):
+def basic_mock_pyarango(basic_mock_connection_init):
 
-    monkeypatch.setattr(Connection, "__init__", Mock(return_value=None))
+    pass
+
+@pytest.fixture
+def mock_pyarango(monkeypatch):
+
+    monkeypatch.setattr(lowball_arangodb_authdb.authdb, "Connection", TestMockConnection)
+    monkeypatch.setattr(lowball_arangodb_authdb.authdb, "Database", TestMockDatabase)
+    monkeypatch.setattr(lowball_arangodb_authdb.authdb, "Collection", TestMockCollection)
+    monkeypatch.setattr(lowball_arangodb_authdb.authdb, "Document", TestMockDocument)
+
+@pytest.fixture
+def basic_mock_connection_init(monkeypatch):
+
+    monkeypatch.setattr(TestMockConnection, "__init__", Mock(return_value=None))
+
+@pytest.fixture
+def basic_mock_connection_get_item_db_not_present(monkeypatch):
+
+    mock = Mock()
+    mock.side_effect = KeyError()
+    monkeypatch.setattr(TestMockDatabase, "__init__", Mock(return_value=None))
+    monkeypatch.setattr(TestMockConnection, "__getitem__", mock)
+    monkeypatch.setattr(TestMockConnection, "createDatabase", Mock(return_value=TestMockDatabase(connection=Mock(), name="test")))
 
