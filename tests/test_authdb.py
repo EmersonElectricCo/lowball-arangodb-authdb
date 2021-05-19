@@ -23,7 +23,6 @@ class TestAuthDBInit:
         verify=True
         database_name="lowball"
         collection_name="authentication_tokens"
-        index_client_id=True
 
     arango_url should include http:// or https://, i think we rely on the connection class to validate any further here
 
@@ -38,15 +37,11 @@ class TestAuthDBInit:
 
     collection_name: string
 
-    index_client_id: bool
 
     _key = token id
 
     I think we can keep this implementation low level meaning, not creating high level of abstraction. Tokens should
     be immutable once created
-
-    index client id would allow faster lookups by client id for tokens
-    The collection will be used to hold token documents, organized by tokenid
 
     Should setup Validators for the token documents in the collection
 
@@ -74,7 +69,6 @@ class TestAuthDBInit:
         assert authdb.verify == True
         assert authdb.database_name == "lowball_authdb"
         assert authdb.collection_name == "authentication_tokens"
-        assert authdb.index_client_id == False
 
     def test_init_accepts_expected_kwargs(self, basic_mock_pyarango, mock_pyarango):
 
@@ -86,7 +80,6 @@ class TestAuthDBInit:
             verify=False,
             database_name="authdb",
             collection_name="token_store",
-            index_client_id=True
         )
 
         assert authdb.url == "https://local.arango"
@@ -96,7 +89,6 @@ class TestAuthDBInit:
         assert authdb.verify == False
         assert authdb.database_name == "authdb"
         assert authdb.collection_name == "token_store"
-        assert authdb.index_client_id == True
 
     # test validation of arango url parameter beyond making sure it's a string with http/https in front
     def test_arango_url_error_if_not_string_or_missing_http_specifier(self,
@@ -215,27 +207,6 @@ class TestAuthDBInit:
         authdb = AuthDB(collection_name=nonemptystrings)
         assert authdb.collection_name == nonemptystrings
 
-    def test_validation_of_index_client_id_if_not_bool(self,
-                                                       mock_pyarango,
-                                                       basic_mock_pyarango):
-        with pytest.raises(ValueError):
-            AuthDB(index_client_id="string")
-
-        with pytest.raises(ValueError):
-            AuthDB(index_client_id=1)
-
-        with pytest.raises(ValueError):
-            AuthDB(index_client_id=[])
-
-    def test_validation_of_index_client_id_if_bool(self,
-                                                   mock_pyarango,
-                                                   basic_mock_pyarango):
-        authdb = AuthDB(index_client_id=True)
-        assert authdb.index_client_id == True
-
-        authdb = AuthDB(index_client_id=False)
-        assert authdb.index_client_id == False
-
     def test_arango_connection_created_correctly(self, mock_pyarango, init_calls_expected_connection,
                                                  basic_mock_pyarango,
                                                  basic_mock_connection):
@@ -291,19 +262,19 @@ class TestAuthDBInit:
                                                               ):
         authdb = AuthDB(collection_name=nonemptystrings)
 
-        authdb.database.__getitem__.assert_called_once_with(authdb.collection_name)
+        authdb.database.__getitem__.assert_called_once_with(nonemptystrings)
         authdb.database.createCollection.assert_called_once_with(authdb.collection_name, waitForSync=True)
         assert isinstance(authdb.collection, AuthenticationCollection)
 
-    def test_authentication_collection_accessed_if_present(self):
-        pass
+    def test_authentication_collection_accessed_if_present(self,
+                                                           mock_pyarango,
+                                                           mock_database_getitem_collection_present,
+                                                           nonemptystrings):
 
-    def test_client_id_index_created_if_set_to_true(self):
-        pass
+        authdb = AuthDB(collection_name=nonemptystrings)
 
-    def test_client_id_index_removed_if_set_to_false(self):
-
-        pass
+        authdb.database.__getitem__.assert_called_once_with(nonemptystrings)
+        assert isinstance(authdb.collection, AuthenticationCollection)
 
 
 class TestAddToken:

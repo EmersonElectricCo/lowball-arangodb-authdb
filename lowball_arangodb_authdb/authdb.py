@@ -49,7 +49,6 @@ class AuthDB(AuthDatabase):
                  verify=True,
                  database_name="lowball_authdb",
                  collection_name="authentication_tokens",
-                 index_client_id=False
                  ):
 
         self.url = url
@@ -59,7 +58,6 @@ class AuthDB(AuthDatabase):
         self.verify = verify
         self.database_name = database_name
         self.collection_name = collection_name
-        self.index_client_id = index_client_id
 
         AuthDatabase.__init__(self)
 
@@ -169,17 +167,6 @@ class AuthDB(AuthDatabase):
                 f"Collection Name must be a non empty string, but cannot be one of {self._RESERVED_COLLECTION_NAMES}")
 
         self._collection_name = value
-
-    @property
-    def index_client_id(self):
-        return self._index_client_id
-
-    @index_client_id.setter
-    def index_client_id(self, value):
-        if not isinstance(value, bool):
-            raise ValueError("index client id must be a bool (true/false)")
-
-        self._index_client_id = value
 
     def add_token(self, token_object):
 

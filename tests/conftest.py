@@ -210,12 +210,12 @@ def invalid_collection_name(request):
     return request.param
 
 @pytest.fixture(params=[
-    ("http://127.0.0.1", 443, "lowball", "test", False, "db", "toke", False),
-    ("https://local.arang", 8529, "below", "blaw", True, "daby", "auth", True)
+    ("http://127.0.0.1", 443, "lowball", "test", False, "db", "toke"),
+    ("https://local.arang", 8529, "below", "blaw", True, "daby", "auth")
 ])
 def init_calls_expected_connection(request):
 
-    url, port, user, pw, verify, db_name, col_name, clid_index = request.param
+    url, port, user, pw, verify, db_name, col_name = request.param
 
     return request.param, call(
         arangoURL=f"{url}:{port}",
@@ -309,4 +309,16 @@ def mock_database_getitem_collection_not_present(mock_connection_get_item_db_pre
     monkeypatch.setattr(TestMockDatabase, "__getitem__", Mock(side_effect=KeyError))
     monkeypatch.setattr(TestMockCollection, "__init__", Mock(return_value=None))
     monkeypatch.setattr(TestMockDatabase, "createCollection", Mock(wraps=mock_create_collection))
+
+@pytest.fixture
+def mock_database_getitem_collection_present(mock_connection_get_item_db_present, monkeypatch):
+
+    def mock_get_item(value):
+
+        return Collection_metaclass.getCollectionClass(value)(Mock(), {})
+
+    monkeypatch.setattr(TestMockCollection, "__init__", Mock(return_value=None))
+    monkeypatch.setattr(TestMockDatabase, "__getitem__", Mock(wraps=mock_get_item))
+
+
 
