@@ -3,10 +3,30 @@ import pathlib
 from lowball.models.authentication_models import Token, valid_token_id
 from lowball.models.provider_models import AuthDatabase
 from pyArango.connection import Connection
-from pyArango.collection import Collection
+from pyArango.collection import Collection, Field
+from .token_validators import *
 from pyArango.database import Database
 from pyArango.document import Document
 from pyArango.theExceptions import DocumentNotFoundError
+
+
+class AuthenticationCollection(Collection):
+
+    _validation = {
+        "on_save": True,
+        "on_set": True,
+        "on_load": False,
+        "allow_foreign_fields": True
+    }
+
+    _fields = {
+        "tid": Field(validators=[TokenIDValidator()]),
+        "cid": Field(validators=[ClientIDValidator]),
+        "cts": Field(validators=[TimestampValidator]),
+        "ets":  Field(validators=[TimestampValidator]),
+        "rcid": Field(validators=[ClientIDValidator]),
+        "r": Field(validators=[RolesValidator])
+    }
 
 
 class AuthDB(AuthDatabase):

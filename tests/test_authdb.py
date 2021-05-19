@@ -394,3 +394,11 @@ class TestCleanupTokens:
     def test_aql_query_called_with_correct_inputs(self):
 
         pass
+
+
+class TestAuthenticationCollection:
+    """The authentication collecion will be a collection class that has the validators
+    instantiated properly so as to
+
+    """
+    pass
