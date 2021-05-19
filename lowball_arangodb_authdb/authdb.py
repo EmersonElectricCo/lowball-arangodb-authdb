@@ -3,7 +3,7 @@ import pathlib
 from lowball.models.authentication_models import Token, valid_token_id
 from lowball.models.provider_models import AuthDatabase
 from pyArango.connection import Connection
-from pyArango.collection import Collection, Field
+from pyArango.collection import Collection, Field, Collection_metaclass
 from .token_validators import *
 from pyArango.database import Database
 from pyArango.document import Document
@@ -75,7 +75,7 @@ class AuthDB(AuthDatabase):
         except KeyError:
             self.database = self.connection.createDatabase(name=self.database_name)
 
-
+        Collection_metaclass.collectionClasses[self.collection_name] = AuthenticationCollection
 
     @property
     def url(self):

@@ -1,10 +1,10 @@
 import pytest
 
-from lowball_arangodb_authdb.authdb import AuthDB
+from lowball_arangodb_authdb.authdb import AuthDB, AuthenticationCollection
 from unittest.mock import call
 import pyArango
 from pyArango.connection import Connection
-from pyArango.collection import Collection
+from pyArango.collection import Collection, Collection_metaclass
 from pyArango.database import Database
 from pyArango.document import Document
 
@@ -267,6 +267,18 @@ class TestAuthDBInit:
 
         assert isinstance(authdb.database, Database)
         assert authdb.database.name == basic_db_name
+
+
+    def test_named_authentication_collection_is_correctly_set(self,
+                                                              mock_pyarango,
+                                                              basic_db_name,
+                                                              mock_connection_get_item_db_present,
+                                                              nonemptystrings
+                                                              ):
+        authdb = AuthDB(collection_name=nonemptystrings)
+
+        assert Collection_metaclass.collectionClasses.get(nonemptystrings) == AuthenticationCollection
+
 
     def test_authentication_collection_created_if_not_present(self):
 
