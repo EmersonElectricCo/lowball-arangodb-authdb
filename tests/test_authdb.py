@@ -279,9 +279,18 @@ class TestAuthDBInit:
 
 class TestAddToken:
 
-    def test_error_when_not_given_token_object(self):
+    def test_error_when_not_given_token_object(self, mock_auth_db):
 
-        pass
+        authdb = AuthDB()
+
+        with pytest.raises(TypeError):
+            authdb.add_token("string")
+
+        with pytest.raises(TypeError):
+            authdb.add_token(None)
+
+        with pytest.raises(TypeError):
+            authdb.add_token([])
 
     def test_failure_when_token_already_exists(self):
 
@@ -388,11 +397,3 @@ class TestCleanupTokens:
     def test_aql_query_called_with_correct_inputs(self):
 
         pass
-
-
-class TestAuthenticationCollection:
-    """The authentication collecion will be a collection class that has the validators
-    instantiated properly so as to
-
-    """
-    pass

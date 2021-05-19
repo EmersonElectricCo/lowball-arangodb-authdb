@@ -322,3 +322,13 @@ def mock_database_getitem_collection_present(mock_connection_get_item_db_present
 
 
 
+@pytest.fixture
+def mock_auth_db(monkeypatch):
+
+    monkeypatch.setattr(AuthDB, "__init__", Mock(return_value=None))
+    monkeypatch.setattr(TestMockCollection, "__init__", Mock(return_value=None))
+    AuthDB.collection = TestMockCollection(Mock(), {})
+
+
+
+

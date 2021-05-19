@@ -170,7 +170,8 @@ class AuthDB(AuthDatabase):
 
     def add_token(self, token_object):
 
-        pass
+        if not isinstance(token_object, Token):
+            raise TypeError("AuthDB received a non Token Object to add to the database")
 
     def lookup_token(self, token_id):
 
