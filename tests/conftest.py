@@ -1,11 +1,12 @@
 import pytest
 from unittest.mock import Mock, MagicMock, call
 from pyArango.connection import Connection
-from pyArango.collection import Collection
+from pyArango.collection import Collection, Collection_metaclass
 from pyArango.document import Document
 import pyArango
 from pyArango.database import Database
 import lowball_arangodb_authdb.authdb
+from lowball_arangodb_authdb.authdb import AuthDB, AuthenticationCollection
 from datetime import datetime
 import pathlib
 import re
@@ -245,9 +246,19 @@ class TestMockDocument(Document):
     pass
 
 @pytest.fixture
-def basic_mock_pyarango(basic_mock_connection, basic_mock_database):
+def mock_init_database(monkeypatch):
+    monkeypatch.setattr(AuthDB, "_init_database", Mock())
 
+@pytest.fixture
+def mock_init_collection(monkeypatch):
+
+    monkeypatch.setattr(AuthDB, "_init_collection", Mock())
+
+
+@pytest.fixture
+def basic_mock_pyarango(monkeypatch, basic_mock_connection, basic_mock_database, mock_init_database, mock_init_collection):
     pass
+
 
 @pytest.fixture
 def mock_pyarango(monkeypatch):
@@ -286,4 +297,16 @@ def mock_connection_get_item_db_present(monkeypatch, basic_db_name):
     monkeypatch.setattr(TestMockDatabase, "__init__", Mock(return_value=None))
     monkeypatch.setattr(TestMockConnection, "__init__", Mock(return_value=None))
     monkeypatch.setattr(TestMockConnection, "__getitem__", Mock(return_value=TestMockDatabase(connection=Mock(), name=basic_db_name)))
+
+
+@pytest.fixture
+def mock_database_getitem_collection_not_present(mock_connection_get_item_db_present, monkeypatch):
+
+    def mock_create_collection(className = 'Collection', **colProperties):
+
+        return Collection_metaclass.getCollectionClass(className)(Mock(), colProperties)
+
+    monkeypatch.setattr(TestMockDatabase, "__getitem__", Mock(side_effect=KeyError))
+    monkeypatch.setattr(TestMockCollection, "__init__", Mock(return_value=None))
+    monkeypatch.setattr(TestMockDatabase, "createCollection", Mock(wraps=mock_create_collection))
 

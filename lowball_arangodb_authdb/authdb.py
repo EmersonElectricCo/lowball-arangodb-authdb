@@ -69,13 +69,22 @@ class AuthDB(AuthDatabase):
             password=self.password,
             verify=self.verify
         )
+        Collection_metaclass.collectionClasses[self.collection_name] = AuthenticationCollection
 
+        self._init_database()
+        self._init_collection()
+
+    def _init_database(self):
         try:
             self.database = self.connection[self.database_name]
         except KeyError:
             self.database = self.connection.createDatabase(name=self.database_name)
 
-        Collection_metaclass.collectionClasses[self.collection_name] = AuthenticationCollection
+    def _init_collection(self):
+        try:
+            self.collection = self.database[self.collection_name]
+        except KeyError:
+            self.collection = self.database.createCollection(self.collection_name, waitForSync=True)
 
     @property
     def url(self):

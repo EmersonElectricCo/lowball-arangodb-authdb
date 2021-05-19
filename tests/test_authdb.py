@@ -249,6 +249,7 @@ class TestAuthDBInit:
     def test_authentication_database_created_if_not_present(self,
                                                             mock_pyarango,
                                                             basic_mock_connection_get_item_db_not_present,
+                                                            mock_init_collection,
                                                             basic_db_name):
 
         authdb = AuthDB(database_name=basic_db_name)
@@ -261,6 +262,7 @@ class TestAuthDBInit:
     def test_authentication_database_accessed_if_present(self,
                                                          mock_pyarango,
                                                          basic_db_name,
+                                                         mock_init_collection,
                                                          mock_connection_get_item_db_present):
         authdb = AuthDB(database_name=basic_db_name)
         authdb.connection.__getitem__.assert_called_once_with(basic_db_name)
@@ -273,6 +275,8 @@ class TestAuthDBInit:
                                                               mock_pyarango,
                                                               basic_db_name,
                                                               mock_connection_get_item_db_present,
+                                                              mock_init_database,
+                                                              mock_init_collection,
                                                               nonemptystrings
                                                               ):
         authdb = AuthDB(collection_name=nonemptystrings)
@@ -280,9 +284,16 @@ class TestAuthDBInit:
         assert Collection_metaclass.collectionClasses.get(nonemptystrings) == AuthenticationCollection
 
 
-    def test_authentication_collection_created_if_not_present(self):
+    def test_authentication_collection_created_if_not_present(self,
+                                                              mock_pyarango,
+                                                              mock_database_getitem_collection_not_present,
+                                                              nonemptystrings
+                                                              ):
+        authdb = AuthDB(collection_name=nonemptystrings)
 
-        pass
+        authdb.database.__getitem__.assert_called_once_with(authdb.collection_name)
+        authdb.database.createCollection.assert_called_once_with(authdb.collection_name, waitForSync=True)
+        assert isinstance(authdb.collection, AuthenticationCollection)
 
     def test_authentication_collection_accessed_if_present(self):
         pass
