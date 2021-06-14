@@ -1,3 +1,4 @@
+import lowball_arangodb_authdb.authdb
 import pytest
 
 from lowball_arangodb_authdb.authdb import AuthDB, AuthenticationCollection
@@ -292,18 +293,33 @@ class TestAddToken:
         with pytest.raises(TypeError):
             authdb.add_token([])
 
-    def test_failure_when_token_already_exists(self, mock_pyarango):
+    def test_failure_when_token_with_token_id_already_exists(self, mock_auth_db, basic_user1_test_token1, mocked_document,
+                                                             mock_filled_token_collection):
+
+        authdb = AuthDB()
+
+        with pytest.raises(ValueError):
+            authdb.add_token(basic_user1_test_token1)
 
 
-        pass
+    def test_add_token_calls_create_document_with_token_dictionary_sets_key_and_saves(self,
+                                                                                      mock_auth_db,
+                                                                                      mock_pyarango,
+                                                                                      admin_user1_test_token2,
+                                                                                      mock_filled_token_collection,
+                                                                                      mock_collection_create_document_all_good,
+                                                                                      mock_document_save_no_issues
+                                                                                      ):
+        authdb = AuthDB()
 
-    def test_add_token_calls_create_document_with_token_dictionary(self):
+        authdb.add_token(admin_user1_test_token2)
 
-        pass
+        authdb.collection.createDocument.assert_called_once_with(admin_user1_test_token2.to_dict())
 
-    def test_add_token_sets_new_document_key_to_token_id_and_saves(self):
+        # have to go this deep because of the way we mock
+        lowball_arangodb_authdb.authdb.Document.save.assert_called_once()
 
-        pass
+
 
 
 class TestLookupToken:

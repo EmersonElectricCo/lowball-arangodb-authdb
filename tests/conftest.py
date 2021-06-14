@@ -3,10 +3,12 @@ from unittest.mock import Mock, MagicMock, call
 from pyArango.connection import Connection
 from pyArango.collection import Collection, Collection_metaclass
 from pyArango.document import Document
+from pyArango.theExceptions import DocumentNotFoundError, CreationError
 import pyArango
 from pyArango.database import Database
 import lowball_arangodb_authdb.authdb
 from lowball_arangodb_authdb.authdb import AuthDB, AuthenticationCollection
+from lowball.models.authentication_models.token import Token
 from datetime import datetime
 import pathlib
 import re
@@ -248,7 +250,8 @@ class TestMockCollection(Collection):
 class TestMockDocument(Document):
 
     def __init__(self, *args, **kwargs):
-        pass
+        self.test_key = None
+        self.token_json = None
 
 @pytest.fixture
 def mock_init_database(monkeypatch):
@@ -334,9 +337,270 @@ def mock_auth_db(monkeypatch):
     AuthDB.collection = TestMockCollection()
 
 
+@pytest.fixture
+def mocked_document(monkeypatch):
+
+    # mock the following
+    # TestMockDocument.getStore
+    # TestMockDocument.save
+    # TestMockDocument.delete
+    def mock_doc_get_store(self):
+
+        return self.token_json
+
+    monkeypatch.setattr(TestMockDocument, "delete", Mock())
+    monkeypatch.setattr(TestMockDocument, "save", Mock())
+    monkeypatch.setattr(TestMockDocument, "getStore", mock_doc_get_store)
+
+@pytest.fixture
+def mock_filled_token_collection(
+        monkeypatch,
+        basic_user1_test_token1,
+        basic_user1_test_token2,
+        basic_user2_test_token1,
+        basic_user2_test_token2,
+        admin_user1_test_token1,
+        admin_user1_test_token2,
+        admin_user2_test_token1,
+        admin_user2_test_token2,
+        mocked_document
+    ):
+
+    token_dict_map = {
+        basic_user1_test_token1.token_id: basic_user1_test_token1.to_dict(),
+        basic_user1_test_token2.token_id: basic_user1_test_token2.to_dict(),
+        basic_user2_test_token1.token_id: basic_user2_test_token1.to_dict(),
+        basic_user2_test_token2.token_id: basic_user2_test_token2.to_dict(),
+        admin_user1_test_token1.token_id: admin_user1_test_token1.to_dict(),
+        admin_user2_test_token1.token_id: admin_user2_test_token1.to_dict(),
+
+    }
+    # mock the following
+    # TestMockCollection.__getitem__
+    # TestMockCollection.fetchDocument
+
+    def mock_collection_getitem(self, key):
+
+        token_dict = token_dict_map.get(key)
+
+        if token_dict:
+            document = TestMockDocument()
+            document.token_json = token_dict
+            document.test_key = key
+            return document
+        else:
+            raise DocumentNotFoundError("not found")
+
+    def mock_collection_fetch_document(self, key, *args, **kwargs):
+        token_dict = token_dict_map.get(key)
+
+        if token_dict:
+            document = TestMockDocument()
+            document.token_json = token_dict
+            document.test_key = key
+            return document
+        else:
+            raise DocumentNotFoundError("not found")
+
+
+    monkeypatch.setattr(TestMockCollection, "fetchDocument", mock_collection_fetch_document)
+    monkeypatch.setattr(TestMockCollection, "__getitem__", mock_collection_getitem)
+
+@pytest.fixture
+def mock_document_save_no_issues(monkeypatch):
+
+    monkeypatch.setattr(TestMockDocument, "save", Mock())
+
+
+@pytest.fixture
+def mock_document_save_creation_error(monkeypatch):
+    monkeypatch.setattr(TestMockDocument, "save", Mock(raises=CreationError))
+
+@pytest.fixture
+def mock_collection_create_document_all_good(monkeypatch):
+    monkeypatch.setattr(TestMockCollection, "createDocument", Mock(return_value=TestMockDocument()))
 
 
 
 
+###############
+# TOKEN STUFF #
+###############
+@pytest.fixture
+def basic_user_id1():
 
+    return "user1"
+
+
+@pytest.fixture
+def basic_user_id2():
+    return "user2"
+
+
+@pytest.fixture
+def admin_user_id1():
+    return "admin1"
+
+
+@pytest.fixture
+def admin_user_id2():
+    return "admin2"
+
+
+@pytest.fixture
+def test_token_id1():
+
+    return "a" * 16
+
+
+@pytest.fixture
+def test_token_id2():
+    return "b" * 16
+
+
+@pytest.fixture
+def test_token_id3():
+    return "c" * 16
+
+
+@pytest.fixture
+def test_token_id4():
+    return "d" * 16
+
+
+@pytest.fixture
+def test_token_id5():
+    return "e" * 16
+
+
+@pytest.fixture
+def test_token_id6():
+    return "f" * 16
+
+
+@pytest.fixture
+def test_token_id7():
+    return "g" * 16
+
+
+@pytest.fixture
+def test_token_id8():
+    return "h" * 16
+
+
+@pytest.fixture
+def admin_role():
+    return "admin"
+
+
+@pytest.fixture
+def test_role1():
+    return "r1"
+
+
+@pytest.fixture
+def test_role2():
+    return "r2"
+
+
+@pytest.fixture
+def basic_user1_test_token1(test_token_id1, admin_user_id1, basic_user_id1):
+
+    return Token(
+        cid=basic_user_id1,
+        r=[],
+        cts=datetime(2021, 1, 1),
+        ets=datetime(2021, 2, 1),
+        rcid=admin_user_id1,
+        tid=test_token_id1
+    )
+
+@pytest.fixture
+def basic_user1_test_token2(test_token_id2, admin_user_id1, basic_user_id1, test_role1):
+
+    return Token(
+        cid=basic_user_id1,
+        r=[test_role1],
+        cts=datetime(2021, 1, 1),
+        ets=datetime(2021, 2, 1),
+        rcid=admin_user_id1,
+        tid=test_token_id2
+    )
+
+@pytest.fixture
+def basic_user2_test_token1(test_token_id3, admin_user_id2, basic_user_id2, test_role1):
+
+    return Token(
+        cid=basic_user_id2,
+        r=[test_role1],
+        cts=datetime(2021, 1, 1),
+        ets=datetime(2021, 2, 1),
+        rcid=admin_user_id2,
+        tid=test_token_id3
+    )
+
+
+@pytest.fixture
+def basic_user2_test_token2(test_token_id4, admin_user_id1, basic_user_id2, test_role1, test_role2):
+
+    return Token(
+        cid=basic_user_id2,
+        r=[test_role1, test_role2],
+        cts=datetime(2021, 1, 1),
+        ets=datetime(2021, 2, 1),
+        rcid=admin_user_id1,
+        tid=test_token_id4
+    )
+
+
+@pytest.fixture
+def admin_user1_test_token1(test_token_id5, admin_user_id1, admin_role):
+
+    return Token(
+        cid=admin_user_id1,
+        r=[admin_role],
+        cts=datetime(2021, 1, 1),
+        ets=datetime(2021, 2, 1),
+        rcid=admin_user_id1,
+        tid=test_token_id5
+    )
+
+
+@pytest.fixture
+def admin_user1_test_token2(test_token_id6, admin_user_id1, admin_role, test_role1):
+
+    return Token(
+        cid=admin_user_id1,
+        r=[admin_role, test_role1],
+        cts=datetime(2021, 1, 1),
+        ets=datetime(2021, 2, 1),
+        rcid=admin_user_id1,
+        tid=test_token_id6
+    )
+
+
+@pytest.fixture
+def admin_user2_test_token1(test_token_id7, admin_user_id2, admin_role):
+
+    return Token(
+        cid=admin_user_id2,
+        r=[admin_role],
+        cts=datetime(2021, 1, 1),
+        ets=datetime(2021, 2, 1),
+        rcid=admin_user_id2,
+        tid=test_token_id7
+    )
+
+
+@pytest.fixture
+def admin_user2_test_token2(test_token_id8, admin_user_id2, admin_role, test_role1):
+
+    return Token(
+        cid=admin_user_id2,
+        r=[admin_role, test_role1],
+        cts=datetime(2021, 1, 1),
+        ets=datetime(2021, 2, 1),
+        rcid=admin_user_id2,
+        tid=test_token_id8
+    )
 

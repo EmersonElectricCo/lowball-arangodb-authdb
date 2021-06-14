@@ -173,6 +173,18 @@ class AuthDB(AuthDatabase):
         if not isinstance(token_object, Token):
             raise TypeError("AuthDB received a non Token Object to add to the database")
 
+        try:
+            existing_token = self.collection[token_object.token_id]
+        except DocumentNotFoundError:
+            existing_token = None
+
+        if existing_token is not None:
+            raise ValueError("Error during token creation. Attempt to create token with existing token id. Try Again.")
+
+        new_document = self.collection.createDocument(token_object.to_dict())
+        new_document._key = token_object.token_id
+        new_document.save()
+
     def lookup_token(self, token_id):
 
         pass
