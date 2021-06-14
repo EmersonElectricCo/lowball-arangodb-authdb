@@ -292,7 +292,8 @@ class TestAddToken:
         with pytest.raises(TypeError):
             authdb.add_token([])
 
-    def test_failure_when_token_already_exists(self):
+    def test_failure_when_token_already_exists(self, mock_pyarango):
+
 
         pass
 

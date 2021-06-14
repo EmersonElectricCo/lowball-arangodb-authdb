@@ -230,20 +230,25 @@ def basic_db_name():
 
 class TestMockConnection(Connection):
 
-    pass
+    def __init__(self, *args, **kwargs):
+        pass
 
 class TestMockDatabase(Database):
 
-    pass
+    def __init__(self, *args, **kwargs):
+        pass
 
 
 class TestMockCollection(Collection):
 
-    pass
+    def __init__(self, *args, **kwargs):
+
+        pass
 
 class TestMockDocument(Document):
 
-    pass
+    def __init__(self, *args, **kwargs):
+        pass
 
 @pytest.fixture
 def mock_init_database(monkeypatch):
@@ -326,8 +331,11 @@ def mock_database_getitem_collection_present(mock_connection_get_item_db_present
 def mock_auth_db(monkeypatch):
 
     monkeypatch.setattr(AuthDB, "__init__", Mock(return_value=None))
-    monkeypatch.setattr(TestMockCollection, "__init__", Mock(return_value=None))
-    AuthDB.collection = TestMockCollection(Mock(), {})
+    AuthDB.collection = TestMockCollection()
+
+
+
+
 
 
 
