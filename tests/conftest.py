@@ -405,7 +405,7 @@ def token_dict_map(
         basic_user2_test_token2,
         admin_user1_test_token1,
         admin_user2_test_token1
-    ):
+        ):
     token_dict_map = {
         basic_user1_test_token1.token_id: basic_user1_test_token1.to_dict(),
         basic_user1_test_token2.token_id: basic_user1_test_token2.to_dict(),
@@ -423,7 +423,7 @@ def mock_filled_token_collection(
         monkeypatch,
         token_dict_map,
         mocked_document
-    ):
+        ):
 
     # mock the following
     # TestMockCollection.__getitem__
