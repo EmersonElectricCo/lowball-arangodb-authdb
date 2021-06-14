@@ -379,7 +379,7 @@ def mock_filled_token_collection(
     # TestMockCollection.__getitem__
     # TestMockCollection.fetchDocument
 
-    def mock_collection_getitem(self, key):
+    def mock_collection_getitem(key):
 
         token_dict = token_dict_map.get(key)
 
@@ -391,7 +391,7 @@ def mock_filled_token_collection(
         else:
             raise DocumentNotFoundError("not found")
 
-    def mock_collection_fetch_document(self, key, *args, **kwargs):
+    def mock_collection_fetch_document(key, *args, **kwargs):
         token_dict = token_dict_map.get(key)
 
         if token_dict:
@@ -403,8 +403,8 @@ def mock_filled_token_collection(
             raise DocumentNotFoundError("not found")
 
 
-    monkeypatch.setattr(TestMockCollection, "fetchDocument", mock_collection_fetch_document)
-    monkeypatch.setattr(TestMockCollection, "__getitem__", mock_collection_getitem)
+    monkeypatch.setattr(TestMockCollection, "fetchDocument", Mock(wraps=mock_collection_fetch_document))
+    monkeypatch.setattr(TestMockCollection, "__getitem__", Mock(wraps=mock_collection_getitem))
 
 @pytest.fixture
 def mock_document_save_no_issues(monkeypatch):
@@ -417,11 +417,22 @@ def mock_document_save_creation_error(monkeypatch):
     monkeypatch.setattr(TestMockDocument, "save", Mock(raises=CreationError))
 
 @pytest.fixture
+def mock_document_delete(monkeypatch):
+    monkeypatch.setattr(TestMockDocument, "delete", Mock())
+
+@pytest.fixture
 def mock_collection_create_document_all_good(monkeypatch):
     monkeypatch.setattr(TestMockCollection, "createDocument", Mock(return_value=TestMockDocument()))
 
 
+@pytest.fixture
+def fetch_document_returns_bad_token_data(mock_filled_token_collection, monkeypatch):
 
+    doc = TestMockDocument()
+    doc.token_json = {
+        "invalid": "structure"
+    }
+    monkeypatch.setattr(TestMockCollection, "fetchDocument", Mock(return_value=doc))
 
 ###############
 # TOKEN STUFF #

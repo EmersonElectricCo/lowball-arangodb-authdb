@@ -174,7 +174,7 @@ class AuthDB(AuthDatabase):
             raise TypeError("AuthDB received a non Token Object to add to the database")
 
         try:
-            existing_token = self.collection[token_object.token_id]
+            existing_token = self.collection.fetchDocument(token_object.token_id)
         except DocumentNotFoundError:
             existing_token = None
 
@@ -187,7 +187,19 @@ class AuthDB(AuthDatabase):
 
     def lookup_token(self, token_id):
 
-        pass
+        try:
+            token_doc = self.collection.fetchDocument(token_id)
+        except DocumentNotFoundError:
+            return None
+
+        try:
+            token = Token(**token_doc.getStore())
+            return token
+        except:
+            token_doc.delete()
+        return None
+
+
 
     def revoke_token(self, token_id):
 

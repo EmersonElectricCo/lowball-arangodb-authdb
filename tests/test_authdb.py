@@ -8,6 +8,7 @@ from pyArango.connection import Connection
 from pyArango.collection import Collection, Collection_metaclass
 from pyArango.database import Database
 from pyArango.document import Document
+from lowball.models.authentication_models import Token
 
 class TestAuthDBInit:
     """Tests:
@@ -301,7 +302,6 @@ class TestAddToken:
         with pytest.raises(ValueError):
             authdb.add_token(basic_user1_test_token1)
 
-
     def test_add_token_calls_create_document_with_token_dictionary_sets_key_and_saves(self,
                                                                                       mock_auth_db,
                                                                                       mock_pyarango,
@@ -320,25 +320,52 @@ class TestAddToken:
         lowball_arangodb_authdb.authdb.Document.save.assert_called_once()
 
 
-
-
 class TestLookupToken:
 
-    def test_returns_none_when_token_not_found(self):
+    def test_returns_none_when_token_not_found(self,
+                                               test_token_id6,
+                                               mock_pyarango,
+                                               mock_filled_token_collection,
+                                               mock_auth_db
+                                               ):
 
-        pass
+        authdb = AuthDB()
 
-    def test_deletes_token_if_token_information_cannot_be_loaded_into_token_when_found(self):
-        pass
+        token = authdb.lookup_token(test_token_id6)
+        authdb.collection.fetchDocument.assert_called_once_with(test_token_id6)
+        assert token is None
 
-    def test_returns_token_object_when_token_document_found(self):
+    def test_deletes_token_if_token_information_cannot_be_loaded_into_token_when_found(self, mock_pyarango,
+                                                                                       mock_auth_db,
+                                                                                       fetch_document_returns_bad_token_data,
+                                                                                       mock_document_delete
+                                                                                       ):
+        authdb = AuthDB()
 
-        pass
+        token = authdb.lookup_token("doesntmatter")
+        assert token is None
+        authdb.collection.fetchDocument.assert_called_once_with("doesntmatter")
+        lowball_arangodb_authdb.authdb.Document.delete.assert_called_once()
+
+    def test_returns_token_object_when_token_document_found(self,
+                                                            mock_pyarango,
+                                                            mock_filled_token_collection,
+                                                            mock_auth_db,
+                                                            test_token_id5,
+                                                            admin_user1_test_token1
+                                                            ):
+        authdb = AuthDB()
+
+        token = authdb.lookup_token(test_token_id5)
+        assert isinstance(token, Token)
+        assert token.to_dict() == admin_user1_test_token1.to_dict()
+
+        authdb.collection.fetchDocument.assert_called_once_with(test_token_id5)
 
 
 class TestRevokeToken:
 
-    def test_returns_none_when_token_not_found(self):
+    def test_returns_none(self):
         pass
 
     def test_calls_delete_on_token_document_when_found(self):
