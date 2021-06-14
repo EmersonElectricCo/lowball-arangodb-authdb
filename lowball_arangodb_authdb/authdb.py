@@ -203,7 +203,13 @@ class AuthDB(AuthDatabase):
 
     def revoke_token(self, token_id):
 
-        pass
+        try:
+            token_doc = self.collection.fetchDocument(token_id)
+        except DocumentNotFoundError:
+            return None
+
+        token_doc.delete()
+        return None
 
     def revoke_all(self):
 

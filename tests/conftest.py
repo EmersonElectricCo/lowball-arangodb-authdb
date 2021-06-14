@@ -329,7 +329,6 @@ def mock_database_getitem_collection_present(mock_connection_get_item_db_present
     monkeypatch.setattr(TestMockDatabase, "__getitem__", Mock(wraps=mock_get_item))
 
 
-
 @pytest.fixture
 def mock_auth_db(monkeypatch):
 
@@ -351,6 +350,52 @@ def mocked_document(monkeypatch):
     monkeypatch.setattr(TestMockDocument, "delete", Mock())
     monkeypatch.setattr(TestMockDocument, "save", Mock())
     monkeypatch.setattr(TestMockDocument, "getStore", mock_doc_get_store)
+
+
+@pytest.fixture(params=[
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+])
+def token_ids(test_token_id1, test_token_id2, test_token_id3, test_token_id4, test_token_id5, test_token_id6, test_token_id7, test_token_id8, request):
+
+    return [
+        test_token_id1,
+        test_token_id2,
+        test_token_id3,
+        test_token_id4,
+        test_token_id5,
+        test_token_id6,
+        test_token_id7,
+        test_token_id8
+    ][request.param]
+
+
+@pytest.fixture(params=[
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+])
+def present_token_ids(test_token_id1, test_token_id2, test_token_id3, test_token_id4, test_token_id5, test_token_id7, request):
+
+    return [
+        test_token_id1,
+        test_token_id2,
+        test_token_id3,
+        test_token_id4,
+        test_token_id5,
+        test_token_id7,
+
+    ][request.param]
+
 
 @pytest.fixture
 def mock_filled_token_collection(

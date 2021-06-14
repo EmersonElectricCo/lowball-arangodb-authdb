@@ -365,11 +365,29 @@ class TestLookupToken:
 
 class TestRevokeToken:
 
-    def test_returns_none(self):
-        pass
+    def test_returns_none(self,
+                          mock_pyarango,
+                          mock_auth_db,
+                          mock_filled_token_collection,
+                          token_ids
+                          ):
+        authdb = AuthDB()
 
-    def test_calls_delete_on_token_document_when_found(self):
-        pass
+        assert authdb.revoke_token(token_ids) is None
+        authdb.collection.fetchDocument.assert_called_once_with(token_ids)
+
+
+    def test_calls_delete_on_token_document_when_found(self,
+                                                       mock_pyarango,
+                                                       mock_auth_db,
+                                                       mock_filled_token_collection,
+                                                       mock_document_delete,
+                                                       present_token_ids
+                                                       ):
+        authdb = AuthDB()
+        assert authdb.revoke_token(present_token_ids) is None
+        authdb.collection.fetchDocument.assert_called_once_with(present_token_ids)
+        lowball_arangodb_authdb.authdb.Document.delete.assert_called_once()
 
 
 class TestRevokeAll:
