@@ -398,19 +398,14 @@ def present_token_ids(test_token_id1, test_token_id2, test_token_id3, test_token
 
 
 @pytest.fixture
-def mock_filled_token_collection(
-        monkeypatch,
+def token_dict_map(
         basic_user1_test_token1,
         basic_user1_test_token2,
         basic_user2_test_token1,
         basic_user2_test_token2,
         admin_user1_test_token1,
-        admin_user1_test_token2,
-        admin_user2_test_token1,
-        admin_user2_test_token2,
-        mocked_document
+        admin_user2_test_token1
     ):
-
     token_dict_map = {
         basic_user1_test_token1.token_id: basic_user1_test_token1.to_dict(),
         basic_user1_test_token2.token_id: basic_user1_test_token2.to_dict(),
@@ -420,9 +415,20 @@ def mock_filled_token_collection(
         admin_user2_test_token1.token_id: admin_user2_test_token1.to_dict(),
 
     }
+    return token_dict_map
+
+
+@pytest.fixture
+def mock_filled_token_collection(
+        monkeypatch,
+        token_dict_map,
+        mocked_document
+    ):
+
     # mock the following
     # TestMockCollection.__getitem__
     # TestMockCollection.fetchDocument
+    # TestMockCollection.fetchAll
 
     def mock_collection_getitem(key):
 
@@ -447,9 +453,68 @@ def mock_filled_token_collection(
         else:
             raise DocumentNotFoundError("not found")
 
+    def mock_collection_fetch_all():
+
+        results = []
+        for key, token_dict in token_dict_map.items():
+            doc = TestMockDocument()
+            doc.test_key = key
+            doc.token_json = token_dict
+            results.append(doc)
+        return results
 
     monkeypatch.setattr(TestMockCollection, "fetchDocument", Mock(wraps=mock_collection_fetch_document))
     monkeypatch.setattr(TestMockCollection, "__getitem__", Mock(wraps=mock_collection_getitem))
+    monkeypatch.setattr(TestMockCollection, "fetchAll", Mock(wraps=mock_collection_fetch_all))
+
+
+@pytest.fixture
+def mock_filled_token_collection_bad_values(token_dict_map, monkeypatch, mocked_document):
+
+    token_dict_map["badvalue1"] = {
+        "invalid_value": "yep"
+    }
+    token_dict_map["badvalue2"] = {
+        "invalid_value_again": "yep"
+    }
+
+    def mock_collection_getitem(key):
+
+        token_dict = token_dict_map.get(key)
+
+        if token_dict:
+            document = TestMockDocument()
+            document.token_json = token_dict
+            document.test_key = key
+            return document
+        else:
+            raise DocumentNotFoundError("not found")
+
+    def mock_collection_fetch_document(key, *args, **kwargs):
+        token_dict = token_dict_map.get(key)
+
+        if token_dict:
+            document = TestMockDocument()
+            document.token_json = token_dict
+            document.test_key = key
+            return document
+        else:
+            raise DocumentNotFoundError("not found")
+
+    def mock_collection_fetch_all():
+
+        results = []
+        for key, token_dict in token_dict_map.items():
+            doc = TestMockDocument()
+            doc.test_key = key
+            doc.token_json = token_dict
+            results.append(doc)
+        return results
+
+    monkeypatch.setattr(TestMockCollection, "fetchDocument", Mock(wraps=mock_collection_fetch_document))
+    monkeypatch.setattr(TestMockCollection, "__getitem__", Mock(wraps=mock_collection_getitem))
+    monkeypatch.setattr(TestMockCollection, "fetchAll", Mock(wraps=mock_collection_fetch_all))
+
 
 @pytest.fixture
 def mock_document_save_no_issues(monkeypatch):

@@ -392,22 +392,73 @@ class TestRevokeToken:
 
 class TestRevokeAll:
 
-    def test_calls_delete_on_each_document_in_the_database(self):
+    def test_calls_delete_on_each_document_in_the_database(self,
+                                                           mock_pyarango,
+                                                           mock_auth_db,
+                                                           mock_filled_token_collection,
+                                                           mock_document_delete
+                                                           ):
 
-        pass
+        authdb = AuthDB()
+        assert authdb.revoke_all() is None
+        # 6 because that's how many tokens are in our mocked collection map
+        assert lowball_arangodb_authdb.authdb.Document.delete.call_count == 6
 
 
 class TestListTokens:
 
-    def test_returns_list_of_token_objects(self):
+    def test_returns_list_of_token_objects(self,
+                                           mock_pyarango,
+                                           mock_auth_db,
+                                           mock_filled_token_collection,
+                                           basic_user1_test_token1,
+                                           basic_user1_test_token2,
+                                           basic_user2_test_token1,
+                                           basic_user2_test_token2,
+                                           admin_user1_test_token1,
+                                           admin_user2_test_token1,
+                                           ):
 
-        pass
+        authdb = AuthDB()
+        result = authdb.list_tokens()
+        assert isinstance(result, list)
+        assert all(isinstance(item, Token) for item in result)
 
-    def test_returns_all_documents_in_the_database_as_token_objects(self):
+        assert basic_user1_test_token1 in result
+        assert basic_user1_test_token2 in result
+        assert basic_user2_test_token2 in result
+        assert basic_user2_test_token2 in result
+        assert admin_user1_test_token1 in result
+        assert admin_user2_test_token1 in result
 
-        pass
+        assert len(result) == 6
 
+    def test_calls_delete_on_any_document_which_fails_to_load_into_a_token_object(self,
+                                                                                  mock_pyarango,
+                                                                                  mock_auth_db,
+                                                                                  mock_filled_token_collection_bad_values,
+                                                                                  basic_user1_test_token1,
+                                                                                  basic_user1_test_token2,
+                                                                                  basic_user2_test_token1,
+                                                                                  basic_user2_test_token2,
+                                                                                  admin_user1_test_token1,
+                                                                                  admin_user2_test_token1,
+                                                                                  ):
+        authdb = AuthDB()
+        result = authdb.list_tokens()
+        assert isinstance(result, list)
+        assert all(isinstance(item, Token) for item in result)
 
+        assert basic_user1_test_token1 in result
+        assert basic_user1_test_token2 in result
+        assert basic_user2_test_token2 in result
+        assert basic_user2_test_token2 in result
+        assert admin_user1_test_token1 in result
+        assert admin_user2_test_token1 in result
+
+        assert len(result) == 6
+        # bad values adds two bad values to the dictionary
+        assert lowball_arangodb_authdb.authdb.Document.delete.call_count == 2
 
 class TestListTokensByClientID:
     """Should expect an aql query here.

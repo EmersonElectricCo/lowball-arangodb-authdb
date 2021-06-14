@@ -199,8 +199,6 @@ class AuthDB(AuthDatabase):
             token_doc.delete()
         return None
 
-
-
     def revoke_token(self, token_id):
 
         try:
@@ -213,11 +211,21 @@ class AuthDB(AuthDatabase):
 
     def revoke_all(self):
 
-        pass
+        for doc in self.collection.fetchAll():
+            doc.delete()
 
     def list_tokens(self):
 
-        pass
+        tokens = self.collection.fetchAll()
+        token_list = []
+        for token_doc in tokens:
+            try:
+                token = Token(**token_doc.getStore())
+                token_list.append(token)
+            except:
+                token_doc.delete()
+
+        return token_list
 
     def list_tokens_by_client_id(self, client_id):
 
