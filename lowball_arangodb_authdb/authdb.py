@@ -84,6 +84,9 @@ class AuthDB(AuthDatabase):
         except KeyError:
             self.collection = self.database.createCollection(self.collection_name, waitForSync=True)
 
+    def get_now(self):
+        return datetime.utcnow()
+
     @property
     def url(self):
         return self._url
@@ -211,8 +214,7 @@ class AuthDB(AuthDatabase):
 
     def revoke_all(self):
 
-        for doc in self.collection.fetchAll():
-            doc.delete()
+        self.collection.truncate()
 
     def list_tokens(self):
 
@@ -229,12 +231,50 @@ class AuthDB(AuthDatabase):
 
     def list_tokens_by_client_id(self, client_id):
 
-        pass
+        QUERY = f"""
+FOR token in {self.collection_name}
+FILTER token.cid == @client_id
+RETURN token
+"""
+        bind_vars = {
+            "client_id": client_id
+        }
+        tokens = self.collection.database.AQLQuery(QUERY, bind_vars=bind_vars)
+
+        results = []
+        for token in tokens:
+            try:
+                t = Token(**token.getStore())
+                results.append(t)
+            except:
+                token.delete()
+        return results
 
     def list_tokens_by_role(self, role):
 
-        pass
+        QUERY = f"""
+FOR token in {self.collection_name}
+FILTER @role in token.r
+return token
+"""
+        bind_vars = {
+            "role": role
+        }
+        tokens = self.collection.database.AQLQuery(QUERY, bind_vars=bind_vars)
+
+        results = []
+        for token in tokens:
+            try:
+                t = Token(**token.getStore())
+                results.append(t)
+            except:
+                token.delete()
+        return results
 
     def cleanup_tokens(self):
-
-        pass
+        QUERY = f"""
+FOR token in {self.collection_name}
+FILTER token.ets < "{str(self.get_now()).split(".")[0]}"
+REMOVE token
+"""
+        self.collection.database.AQLQuery(QUERY)

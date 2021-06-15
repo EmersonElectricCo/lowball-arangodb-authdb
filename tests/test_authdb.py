@@ -392,7 +392,7 @@ class TestRevokeToken:
 
 class TestRevokeAll:
 
-    def test_calls_delete_on_each_document_in_the_database(self,
+    def test_calls_revoke_all_on_the_collection(self,
                                                            mock_pyarango,
                                                            mock_auth_db,
                                                            mock_filled_token_collection,
@@ -401,9 +401,7 @@ class TestRevokeAll:
 
         authdb = AuthDB()
         assert authdb.revoke_all() is None
-        # 6 because that's how many tokens are in our mocked collection map
-        assert lowball_arangodb_authdb.authdb.Document.delete.call_count == 6
-
+        authdb.collection.truncate.assert_called_once()
 
 class TestListTokens:
 
@@ -468,45 +466,91 @@ class TestListTokensByClientID:
 
     """
 
-    def test_returns_list_of_token_objects(self):
-        pass
+    QUERY = """
+FOR token in {}
+FILTER token.cid == @client_id
+RETURN token
+"""
 
-    def test_all_tokens_in_list_are_owned_by_the_specified_client_id(self):
-        """Not sure we can test this properly, as the actual filtering is done on the arango side
+    def test_calls_query_as_expected_and_cleans_up_bad_tokens(self,
+                                           mock_pyarango,
+                                           mock_auth_db,
+                                           mock_filled_token_collection,
+                                           mock_document_delete,
+                                           list_tokens_by_client_id_request_response
+                                           ):
 
-        all we can test is calling the query correctly
+        authdb = AuthDB()
+        expected_query = self.QUERY.format(authdb.collection_name)
 
-        """
-        pass
+        client_id, expected_response = list_tokens_by_client_id_request_response
 
-    def test_aql_query_called_with_correct_inputs(self):
+        expected_bind_vars = {
+            "client_id": client_id
+        }
 
-        pass
+        results = authdb.list_tokens_by_client_id(client_id)
+
+        assert all(token in results for token in expected_response) and all(token in expected_response for token in results)
+        authdb.collection.database.AQLQuery.assert_called_once_with(expected_query, bind_vars=expected_bind_vars)
+        lowball_arangodb_authdb.authdb.Document.delete.assert_called_once()
 
 
 class TestListTokensByRole:
     """This may be an aql queryable option as well, will hae to investigate
 
     """
-    def test_returns_list_of_token_objects(self):
-        pass
 
-    def test_all_tokens_in_list_possess_the_requested_role(self):
+    QUERY = """
+FOR token in {}
+FILTER @role in token.r
+return token
+"""
 
-        pass
+    def test_calls_query_as_expected_and_cleans_up_bad_tokens(self,
+                                                              mock_pyarango,
+                                                              mock_auth_db,
+                                                              mock_filled_token_collection,
+                                                              mock_document_delete,
+                                                              list_tokens_by_role_request_response
+                                                              ):
+        authdb = AuthDB()
+        expected_query = self.QUERY.format(authdb.collection_name)
 
-    def test_aql_query_called_with_correct_inputs(self):
-        pass
+        role, expected_response = list_tokens_by_role_request_response
+
+        expected_bind_vars = {
+            "role": role
+        }
+
+        results = authdb.list_tokens_by_role(role)
+
+        assert all(token in results for token in expected_response) and all(
+            token in expected_response for token in results)
+        authdb.collection.database.AQLQuery.assert_called_once_with(expected_query, bind_vars=expected_bind_vars)
+        lowball_arangodb_authdb.authdb.Document.delete.assert_called_once()
 
 
 class TestCleanupTokens:
     """i believe this is again an aql query we can do
 
     """
-    def test_calls_delete_on_all_tokens_which_are_expired(self):
+    QUERY = """
+FOR token in {}
+FILTER token.ets < "{}"
+REMOVE token
+"""
+    def test_aql_query_called_with_correct_inputs(self,
+                                                  fake_utcnow,
+                                                  simple_mock_aql_query,
+                                                  mock_pyarango,
+                                                  mock_auth_db
+                                                  ):
+        authdb = AuthDB()
+        now = fake_utcnow
+        search_date = str(now).split(".")[0]
+        expected_query = self.QUERY.format(authdb.collection_name, search_date)
 
-        pass
+        authdb.cleanup_tokens()
 
-    def test_aql_query_called_with_correct_inputs(self):
-
-        pass
+        authdb.collection.database.AQLQuery.assert_called_once_with(expected_query)

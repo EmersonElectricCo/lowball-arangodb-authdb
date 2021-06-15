@@ -244,8 +244,7 @@ class TestMockDatabase(Database):
 class TestMockCollection(Collection):
 
     def __init__(self, *args, **kwargs):
-
-        pass
+        self.database = TestMockDatabase()
 
 class TestMockDocument(Document):
 
@@ -333,6 +332,13 @@ def mock_database_getitem_collection_present(mock_connection_get_item_db_present
 def mock_auth_db(monkeypatch):
 
     monkeypatch.setattr(AuthDB, "__init__", Mock(return_value=None))
+    AuthDB.url = "http://127.0.0.1"
+    AuthDB.port = 8529
+    AuthDB.user = "root"
+    AuthDB.password = None
+    AuthDB.verify = True
+    AuthDB.database_name = "lowball_authdb"
+    AuthDB.collection_name = "authentication_tokens"
     AuthDB.collection = TestMockCollection()
 
 
@@ -466,7 +472,7 @@ def mock_filled_token_collection(
     monkeypatch.setattr(TestMockCollection, "fetchDocument", Mock(wraps=mock_collection_fetch_document))
     monkeypatch.setattr(TestMockCollection, "__getitem__", Mock(wraps=mock_collection_getitem))
     monkeypatch.setattr(TestMockCollection, "fetchAll", Mock(wraps=mock_collection_fetch_all))
-
+    monkeypatch.setattr(TestMockCollection, "truncate", Mock())
 
 @pytest.fixture
 def mock_filled_token_collection_bad_values(token_dict_map, monkeypatch, mocked_document):
@@ -725,3 +731,69 @@ def admin_user2_test_token2(test_token_id8, admin_user_id2, admin_role, test_rol
         tid=test_token_id8
     )
 
+@pytest.fixture
+def list_tokens_by_client_id_request_response(
+        basic_user1_test_token1,
+        basic_user1_test_token2,
+        basic_user_id1,
+        monkeypatch
+):
+
+    response = [basic_user1_test_token1, basic_user1_test_token2]
+    response_documents = []
+    for token in response:
+        doc = TestMockDocument()
+        doc.token_json = token.to_dict()
+        doc.test_key = token.token_id
+        response_documents.append(doc)
+    bad_doc = TestMockDocument()
+    bad_doc.token_json = {
+        "bad_value": "not token"
+    }
+    bad_doc.test_key = "bigbaddoc"
+    response_documents.append(bad_doc)
+    monkeypatch.setattr(TestMockDatabase, "AQLQuery", Mock(return_value=response_documents))
+    return basic_user_id1, response
+
+@pytest.fixture
+def list_tokens_by_role_request_response(
+        basic_user1_test_token1,
+        basic_user1_test_token2,
+        basic_user2_test_token1,
+        basic_user2_test_token2,
+        admin_user1_test_token1,
+        admin_user2_test_token1,
+        admin_role,
+        test_role1,
+        test_role2,
+        monkeypatch
+):
+
+    response = [admin_user1_test_token1, admin_user2_test_token1]
+    response_documents = []
+    for token in response:
+        doc = TestMockDocument()
+        doc.token_json = token.to_dict()
+        doc.test_key = token.token_id
+        response_documents.append(doc)
+
+    bad_doc = TestMockDocument()
+    bad_doc.token_json = {
+        "bad_value": "not token"
+    }
+    bad_doc.test_key = "bigbaddoc"
+    response_documents.append(bad_doc)
+    monkeypatch.setattr(TestMockDatabase, "AQLQuery", Mock(return_value=response_documents))
+    return admin_role, response
+
+
+@pytest.fixture
+def fake_utcnow(monkeypatch):
+    from datetime import datetime
+    now = datetime.utcnow()
+    monkeypatch.setattr(AuthDB, "get_now", Mock(return_value=now))
+    return now
+
+@pytest.fixture
+def simple_mock_aql_query(monkeypatch):
+    monkeypatch.setattr(TestMockDatabase, "AQLQuery", Mock(return_value=[]))
