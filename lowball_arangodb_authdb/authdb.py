@@ -29,7 +29,7 @@ class AuthenticationCollection(Collection):
     }
 
 
-class AuthDB(AuthDatabase):
+class LowballArangoDBAuthDB(AuthDatabase):
 
     _RESERVED_DATABASE_NAMES = [
         "_system"
@@ -174,7 +174,7 @@ class AuthDB(AuthDatabase):
     def add_token(self, token_object):
 
         if not isinstance(token_object, Token):
-            raise TypeError("AuthDB received a non Token Object to add to the database")
+            raise TypeError("LowballArangoDBAuthDB received a non Token Object to add to the database")
 
         try:
             existing_token = self.collection.fetchDocument(token_object.token_id)

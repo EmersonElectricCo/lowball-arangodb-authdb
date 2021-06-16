@@ -7,7 +7,7 @@ from pyArango.theExceptions import DocumentNotFoundError, CreationError
 import pyArango
 from pyArango.database import Database
 import lowball_arangodb_authdb.authdb
-from lowball_arangodb_authdb.authdb import AuthDB, AuthenticationCollection
+from lowball_arangodb_authdb.authdb import LowballArangoDBAuthDB, AuthenticationCollection
 from lowball.models.authentication_models.token import Token
 from datetime import datetime
 import pathlib
@@ -254,12 +254,12 @@ class TestMockDocument(Document):
 
 @pytest.fixture
 def mock_init_database(monkeypatch):
-    monkeypatch.setattr(AuthDB, "_init_database", Mock())
+    monkeypatch.setattr(LowballArangoDBAuthDB, "_init_database", Mock())
 
 @pytest.fixture
 def mock_init_collection(monkeypatch):
 
-    monkeypatch.setattr(AuthDB, "_init_collection", Mock())
+    monkeypatch.setattr(LowballArangoDBAuthDB, "_init_collection", Mock())
 
 
 @pytest.fixture
@@ -331,15 +331,15 @@ def mock_database_getitem_collection_present(mock_connection_get_item_db_present
 @pytest.fixture
 def mock_auth_db(monkeypatch):
 
-    monkeypatch.setattr(AuthDB, "__init__", Mock(return_value=None))
-    AuthDB.url = "http://127.0.0.1"
-    AuthDB.port = 8529
-    AuthDB.user = "root"
-    AuthDB.password = None
-    AuthDB.verify = True
-    AuthDB.database_name = "lowball_authdb"
-    AuthDB.collection_name = "authentication_tokens"
-    AuthDB.collection = TestMockCollection()
+    monkeypatch.setattr(LowballArangoDBAuthDB, "__init__", Mock(return_value=None))
+    LowballArangoDBAuthDB.url = "http://127.0.0.1"
+    LowballArangoDBAuthDB.port = 8529
+    LowballArangoDBAuthDB.user = "root"
+    LowballArangoDBAuthDB.password = None
+    LowballArangoDBAuthDB.verify = True
+    LowballArangoDBAuthDB.database_name = "lowball_authdb"
+    LowballArangoDBAuthDB.collection_name = "authentication_tokens"
+    LowballArangoDBAuthDB.collection = TestMockCollection()
 
 
 @pytest.fixture
@@ -791,7 +791,7 @@ def list_tokens_by_role_request_response(
 def fake_utcnow(monkeypatch):
     from datetime import datetime
     now = datetime.utcnow()
-    monkeypatch.setattr(AuthDB, "get_now", Mock(return_value=now))
+    monkeypatch.setattr(LowballArangoDBAuthDB, "get_now", Mock(return_value=now))
     return now
 
 @pytest.fixture

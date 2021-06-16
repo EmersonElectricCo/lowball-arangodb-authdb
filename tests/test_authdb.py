@@ -1,7 +1,7 @@
 import lowball_arangodb_authdb.authdb
 import pytest
 
-from lowball_arangodb_authdb.authdb import AuthDB, AuthenticationCollection
+from lowball_arangodb_authdb.authdb import LowballArangoDBAuthDB, AuthenticationCollection
 from unittest.mock import call
 import pyArango
 from pyArango.connection import Connection
@@ -62,7 +62,7 @@ class TestAuthDBInit:
 
     def test_init_sets_expected_defaults(self, basic_mock_pyarango, mock_pyarango):
 
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
 
         assert authdb.url == "http://127.0.0.1"
         assert authdb.port == 8529
@@ -74,7 +74,7 @@ class TestAuthDBInit:
 
     def test_init_accepts_expected_kwargs(self, basic_mock_pyarango, mock_pyarango):
 
-        authdb = AuthDB(
+        authdb = LowballArangoDBAuthDB(
             url="https://local.arango",
             port=8080,
             user="lowball",
@@ -99,13 +99,13 @@ class TestAuthDBInit:
                                                                       basic_mock_pyarango):
 
         with pytest.raises(ValueError):
-            AuthDB(url=invalid_urls)
+            LowballArangoDBAuthDB(url=invalid_urls)
 
     def test_arango_url_no_error_if_set_correctly(self,
                                                   valid_urls,
                                                   mock_pyarango,
                                                   basic_mock_pyarango):
-        authdb = AuthDB(url=valid_urls)
+        authdb = LowballArangoDBAuthDB(url=valid_urls)
         assert authdb.url == valid_urls
 
     def test_validation_of_arango_port_parameter_as_integer_as_valid_port_number(self,
@@ -113,13 +113,13 @@ class TestAuthDBInit:
                                                                                  mock_pyarango,
                                                                                  basic_mock_pyarango):
         with pytest.raises(ValueError):
-            AuthDB(port=invalid_ports)
+            LowballArangoDBAuthDB(port=invalid_ports)
 
     def test_arango_port_no_error_when_correct_ports(self,
                                                      valid_ports,
                                                      mock_pyarango,
                                                      basic_mock_pyarango):
-        authdb = AuthDB(port=valid_ports)
+        authdb = LowballArangoDBAuthDB(port=valid_ports)
         assert authdb.port == valid_ports
 
     def test_validation_of_arango_user_parameter_nonempty_string(self,
@@ -127,13 +127,13 @@ class TestAuthDBInit:
                                                                  mock_pyarango,
                                                                  basic_mock_pyarango):
         with pytest.raises(ValueError):
-            AuthDB(user=not_strings_or_empty)
+            LowballArangoDBAuthDB(user=not_strings_or_empty)
 
     def test_arango_user_no_error_when_nonempty_string(self,
                                                        nonemptystrings,
                                                        mock_pyarango,
                                                        basic_mock_pyarango):
-        authdb = AuthDB(user=nonemptystrings)
+        authdb = LowballArangoDBAuthDB(user=nonemptystrings)
         assert authdb.user == nonemptystrings
 
     def test_validation_of_arango_password_parameter_is_string_or_none(self,
@@ -141,13 +141,13 @@ class TestAuthDBInit:
                                                                        mock_pyarango,
                                                                        basic_mock_pyarango):
         with pytest.raises(ValueError):
-            AuthDB(password=just_not_string)
+            LowballArangoDBAuthDB(password=just_not_string)
 
     def test_arango_password_no_error_when_string_or_none(self,
                                                           string_or_none,
                                                           mock_pyarango,
                                                           basic_mock_pyarango):
-        authdb = AuthDB(password=string_or_none)
+        authdb = LowballArangoDBAuthDB(password=string_or_none)
         assert authdb.password == string_or_none
 
     def test_validation_of_verify_parameter_when_not_bool_or_string_path_file(self,
@@ -155,7 +155,7 @@ class TestAuthDBInit:
                                                                               mock_pyarango,
                                                                               basic_mock_pyarango):
         with pytest.raises(ValueError):
-            AuthDB(verify=not_bool_or_string_path)
+            LowballArangoDBAuthDB(verify=not_bool_or_string_path)
 
     def test_validation_of_verify_parameter_when_path_does_not_exist(self,
                                                                      path_does_not_exist,
@@ -163,7 +163,7 @@ class TestAuthDBInit:
                                                                      basic_mock_pyarango):
 
         with pytest.raises(ValueError):
-            AuthDB(verify="/non_existent/path")
+            LowballArangoDBAuthDB(verify="/non_existent/path")
 
     def test_validation_of_verify_parameter_when_path_does_exist_but_is_not_a_file(self,
                                                                                    path_does_exist,
@@ -171,14 +171,14 @@ class TestAuthDBInit:
                                                                                    mock_pyarango,
                                                                                    basic_mock_pyarango):
         with pytest.raises(ValueError):
-            AuthDB(verify="/non_existent/file_path")
+            LowballArangoDBAuthDB(verify="/non_existent/file_path")
 
     def test_verify_no_error_when_bool_or_string_path_that_exists(self,
                                                                   valid_verify,
                                                                   mock_pyarango,
                                                                   basic_mock_pyarango):
 
-        authdb = AuthDB(verify=valid_verify)
+        authdb = LowballArangoDBAuthDB(verify=valid_verify)
         assert authdb.verify == valid_verify
 
     def test_validation_of_database_name_parameter_if_not_string_or_system_db(self,
@@ -186,13 +186,13 @@ class TestAuthDBInit:
                                                                               mock_pyarango,
                                                                               basic_mock_pyarango):
         with pytest.raises(ValueError):
-            AuthDB(database_name=invalid_database_name)
+            LowballArangoDBAuthDB(database_name=invalid_database_name)
 
     def test_database_name_when_string_but_not_system(self,
                                                       nonemptystrings,
                                                       mock_pyarango,
                                                       basic_mock_pyarango):
-        authdb = AuthDB(database_name=nonemptystrings)
+        authdb = LowballArangoDBAuthDB(database_name=nonemptystrings)
         assert authdb.database_name == nonemptystrings
 
     def test_validation_of_collection_name_parameter_if_not_string_or_reserved_name(self,
@@ -200,13 +200,13 @@ class TestAuthDBInit:
                                                                                     mock_pyarango,
                                                                                     basic_mock_pyarango):
         with pytest.raises(ValueError):
-            AuthDB(collection_name=invalid_collection_name)
+            LowballArangoDBAuthDB(collection_name=invalid_collection_name)
 
     def test_collection_name_when_string_but_not_reserved(self,
                                                           mock_pyarango,
                                                           nonemptystrings,
                                                           basic_mock_pyarango):
-        authdb = AuthDB(collection_name=nonemptystrings)
+        authdb = LowballArangoDBAuthDB(collection_name=nonemptystrings)
         assert authdb.collection_name == nonemptystrings
 
     def test_arango_connection_created_correctly(self, mock_pyarango, init_calls_expected_connection,
@@ -215,7 +215,7 @@ class TestAuthDBInit:
 
         params, expected_call = init_calls_expected_connection
 
-        auth_db = AuthDB(*params)
+        auth_db = LowballArangoDBAuthDB(*params)
 
         auth_db.connection.__init__.assert_has_calls([expected_call])
 
@@ -225,7 +225,7 @@ class TestAuthDBInit:
                                                             mock_init_collection,
                                                             basic_db_name):
 
-        authdb = AuthDB(database_name=basic_db_name)
+        authdb = LowballArangoDBAuthDB(database_name=basic_db_name)
         authdb.connection.__getitem__.assert_called_once_with(basic_db_name)
         authdb.connection.createDatabase.assert_called_once_with(name=basic_db_name)
 
@@ -237,7 +237,7 @@ class TestAuthDBInit:
                                                          basic_db_name,
                                                          mock_init_collection,
                                                          mock_connection_get_item_db_present):
-        authdb = AuthDB(database_name=basic_db_name)
+        authdb = LowballArangoDBAuthDB(database_name=basic_db_name)
         authdb.connection.__getitem__.assert_called_once_with(basic_db_name)
 
         assert isinstance(authdb.database, Database)
@@ -252,7 +252,7 @@ class TestAuthDBInit:
                                                               mock_init_collection,
                                                               nonemptystrings
                                                               ):
-        authdb = AuthDB(collection_name=nonemptystrings)
+        authdb = LowballArangoDBAuthDB(collection_name=nonemptystrings)
 
         assert Collection_metaclass.collectionClasses.get(nonemptystrings) == AuthenticationCollection
 
@@ -262,7 +262,7 @@ class TestAuthDBInit:
                                                               mock_database_getitem_collection_not_present,
                                                               nonemptystrings
                                                               ):
-        authdb = AuthDB(collection_name=nonemptystrings)
+        authdb = LowballArangoDBAuthDB(collection_name=nonemptystrings)
 
         authdb.database.__getitem__.assert_called_once_with(nonemptystrings)
         authdb.database.createCollection.assert_called_once_with(authdb.collection_name, waitForSync=True)
@@ -273,7 +273,7 @@ class TestAuthDBInit:
                                                            mock_database_getitem_collection_present,
                                                            nonemptystrings):
 
-        authdb = AuthDB(collection_name=nonemptystrings)
+        authdb = LowballArangoDBAuthDB(collection_name=nonemptystrings)
 
         authdb.database.__getitem__.assert_called_once_with(nonemptystrings)
         assert isinstance(authdb.collection, AuthenticationCollection)
@@ -283,7 +283,7 @@ class TestAddToken:
 
     def test_error_when_not_given_token_object(self, mock_auth_db):
 
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
 
         with pytest.raises(TypeError):
             authdb.add_token("string")
@@ -297,7 +297,7 @@ class TestAddToken:
     def test_failure_when_token_with_token_id_already_exists(self, mock_auth_db, basic_user1_test_token1, mocked_document,
                                                              mock_filled_token_collection):
 
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
 
         with pytest.raises(ValueError):
             authdb.add_token(basic_user1_test_token1)
@@ -310,7 +310,7 @@ class TestAddToken:
                                                                                       mock_collection_create_document_all_good,
                                                                                       mock_document_save_no_issues
                                                                                       ):
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
 
         authdb.add_token(admin_user1_test_token2)
 
@@ -329,7 +329,7 @@ class TestLookupToken:
                                                mock_auth_db
                                                ):
 
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
 
         token = authdb.lookup_token(test_token_id6)
         authdb.collection.fetchDocument.assert_called_once_with(test_token_id6)
@@ -340,7 +340,7 @@ class TestLookupToken:
                                                                                        fetch_document_returns_bad_token_data,
                                                                                        mock_document_delete
                                                                                        ):
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
 
         token = authdb.lookup_token("doesntmatter")
         assert token is None
@@ -354,7 +354,7 @@ class TestLookupToken:
                                                             test_token_id5,
                                                             admin_user1_test_token1
                                                             ):
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
 
         token = authdb.lookup_token(test_token_id5)
         assert isinstance(token, Token)
@@ -371,7 +371,7 @@ class TestRevokeToken:
                           mock_filled_token_collection,
                           token_ids
                           ):
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
 
         assert authdb.revoke_token(token_ids) is None
         authdb.collection.fetchDocument.assert_called_once_with(token_ids)
@@ -384,7 +384,7 @@ class TestRevokeToken:
                                                        mock_document_delete,
                                                        present_token_ids
                                                        ):
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
         assert authdb.revoke_token(present_token_ids) is None
         authdb.collection.fetchDocument.assert_called_once_with(present_token_ids)
         lowball_arangodb_authdb.authdb.Document.delete.assert_called_once()
@@ -399,7 +399,7 @@ class TestRevokeAll:
                                                            mock_document_delete
                                                            ):
 
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
         assert authdb.revoke_all() is None
         authdb.collection.truncate.assert_called_once()
 
@@ -417,7 +417,7 @@ class TestListTokens:
                                            admin_user2_test_token1,
                                            ):
 
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
         result = authdb.list_tokens()
         assert isinstance(result, list)
         assert all(isinstance(item, Token) for item in result)
@@ -442,7 +442,7 @@ class TestListTokens:
                                                                                   admin_user1_test_token1,
                                                                                   admin_user2_test_token1,
                                                                                   ):
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
         result = authdb.list_tokens()
         assert isinstance(result, list)
         assert all(isinstance(item, Token) for item in result)
@@ -480,7 +480,7 @@ RETURN token
                                            list_tokens_by_client_id_request_response
                                            ):
 
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
         expected_query = self.QUERY.format(authdb.collection_name)
 
         client_id, expected_response = list_tokens_by_client_id_request_response
@@ -514,7 +514,7 @@ return token
                                                               mock_document_delete,
                                                               list_tokens_by_role_request_response
                                                               ):
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
         expected_query = self.QUERY.format(authdb.collection_name)
 
         role, expected_response = list_tokens_by_role_request_response
@@ -546,7 +546,7 @@ REMOVE token
                                                   mock_pyarango,
                                                   mock_auth_db
                                                   ):
-        authdb = AuthDB()
+        authdb = LowballArangoDBAuthDB()
         now = fake_utcnow
         search_date = str(now).split(".")[0]
         expected_query = self.QUERY.format(authdb.collection_name, search_date)
