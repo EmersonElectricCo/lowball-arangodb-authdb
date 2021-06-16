@@ -492,7 +492,7 @@ RETURN token
         results = authdb.list_tokens_by_client_id(client_id)
 
         assert all(token in results for token in expected_response) and all(token in expected_response for token in results)
-        authdb.collection.database.AQLQuery.assert_called_once_with(expected_query, bind_vars=expected_bind_vars)
+        authdb.collection.database.AQLQuery.assert_called_once_with(expected_query, bindVars=expected_bind_vars)
         lowball_arangodb_authdb.authdb.Document.delete.assert_called_once()
 
 
@@ -527,7 +527,7 @@ return token
 
         assert all(token in results for token in expected_response) and all(
             token in expected_response for token in results)
-        authdb.collection.database.AQLQuery.assert_called_once_with(expected_query, bind_vars=expected_bind_vars)
+        authdb.collection.database.AQLQuery.assert_called_once_with(expected_query, bindVars=expected_bind_vars)
         lowball_arangodb_authdb.authdb.Document.delete.assert_called_once()
 
 
@@ -538,7 +538,7 @@ class TestCleanupTokens:
     QUERY = """
 FOR token in {}
 FILTER token.ets < "{}"
-REMOVE token
+REMOVE token in {}
 """
     def test_aql_query_called_with_correct_inputs(self,
                                                   fake_utcnow,
@@ -549,7 +549,7 @@ REMOVE token
         authdb = LowballArangoDBAuthDB()
         now = fake_utcnow
         search_date = str(now).split(".")[0]
-        expected_query = self.QUERY.format(authdb.collection_name, search_date)
+        expected_query = self.QUERY.format(authdb.collection_name, search_date, authdb.collection_name)
 
         authdb.cleanup_tokens()
 

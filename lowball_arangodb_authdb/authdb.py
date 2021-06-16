@@ -21,11 +21,11 @@ class AuthenticationCollection(Collection):
 
     _fields = {
         "tid": Field(validators=[TokenIDValidator()]),
-        "cid": Field(validators=[ClientIDValidator]),
-        "cts": Field(validators=[TimestampValidator]),
-        "ets":  Field(validators=[TimestampValidator]),
-        "rcid": Field(validators=[ClientIDValidator]),
-        "r": Field(validators=[RolesValidator])
+        "cid": Field(validators=[ClientIDValidator()]),
+        "cts": Field(validators=[TimestampValidator()]),
+        "ets":  Field(validators=[TimestampValidator()]),
+        "rcid": Field(validators=[ClientIDValidator()]),
+        "r": Field(validators=[RolesValidator()])
     }
 
 
@@ -239,7 +239,7 @@ RETURN token
         bind_vars = {
             "client_id": client_id
         }
-        tokens = self.collection.database.AQLQuery(QUERY, bind_vars=bind_vars)
+        tokens = self.collection.database.AQLQuery(QUERY, bindVars=bind_vars)
 
         results = []
         for token in tokens:
@@ -260,7 +260,7 @@ return token
         bind_vars = {
             "role": role
         }
-        tokens = self.collection.database.AQLQuery(QUERY, bind_vars=bind_vars)
+        tokens = self.collection.database.AQLQuery(QUERY, bindVars=bind_vars)
 
         results = []
         for token in tokens:
@@ -275,6 +275,6 @@ return token
         QUERY = f"""
 FOR token in {self.collection_name}
 FILTER token.ets < "{str(self.get_now()).split(".")[0]}"
-REMOVE token
+REMOVE token in {self.collection_name}
 """
         self.collection.database.AQLQuery(QUERY)
