@@ -1,5 +1,14 @@
 # lowball-arangodb-authdb
-This is a simple implementation of the specification for a lowball `AuthDatabase` provider leveraging ArangoDB. 
+This is a simple implementation of the specification for a [Lowball](https://github.com/EmersonElectricCo/lowball) 
+`AuthDatabase` provider leveraging ArangoDB.
+
+## Installation
+
+lowball arangodb authdb has been tested to work with only Python 3.6+
+
+```
+pip install lowball-arangodb-authdb
+```
 
 ## Configuration
 
@@ -25,8 +34,8 @@ __Field Descriptions__
 - port - the port to connect with
 - user - the user to authenticate to the arango instance
 - password - the password for the user
-- verify - Irrelevant for non-TLS connections, true to validate certificates, false to not do so. Can also be set to a
-           path to a certificate file that will be used for validation.
+- verify - Irrelevant for non-TLS connections, true to validate certificates, false to skip validation. 
+           Can also be set to a path to a certificate file that will be used for validation.
 - database_name - the name to give the database which will hold the collection storing the tokens
 - collection_name - the name to give the collection to hold the tokens. 
 
@@ -51,9 +60,11 @@ def hello():
 
 __Notes__
 
-The authentication database interface expects to have a collection to itself. Documents which it attempts to load which
-do not match the `Token` specification will be deleted.
+The authentication database implementation expects to have a collection to itself. Documents it attempts to 
+load which do not match the `Token` specification will be deleted.
 
+Multiple Lowball Applications should have no issue interacting with the same ArangoDB backend. However, you should be 
+wary
 
 
 
