@@ -4,7 +4,7 @@ This is a simple implementation of the specification for a [Lowball](https://git
 
 ## Installation
 
-lowball arangodb authdb has been tested to work with only Python 3.6+
+lowball arangodb authdb has been tested to work with only Python 3.6+ and with ArangoDB Versions 3.4-3.7
 
 ```
 pip install lowball-arangodb-authdb
