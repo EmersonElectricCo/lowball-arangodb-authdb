@@ -15,9 +15,19 @@ Installation
 
 lowball arangodb authdb has been tested to work with only Python 3.6+ and with ArangoDB Versions 3.4-3.7
 
+**pip**
+
 .. code-block:: bash
 
     pip install lowball-arangodb-authdb
+
+**from source**
+
+.. code-block:: bash
+
+    git clone https://github.com/EmersonElectricCo/lowball-arangodb-authdb
+    cd ./lowball-arangodb-authdb
+    python setup.py install
 
 
 Configuration
