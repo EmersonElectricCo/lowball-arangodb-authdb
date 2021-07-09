@@ -1,5 +1,5 @@
 # lowball-arangodb-authdb
-This is a simple implementation of the specification for a [Lowball](https://github.com/EmersonElectricCo/lowball) 
+A simple Authentication Database implementation of the specification for  [Lowball](https://github.com/EmersonElectricCo/lowball) 
 `AuthDatabase` provider leveraging ArangoDB.
 
 ## Installation
@@ -65,7 +65,6 @@ load which do not match the `Token` specification will be deleted.
 
 Multiple Lowball Applications should have no issue interacting with the same ArangoDB backend. However, you should be 
 wary
-
 
 
 
