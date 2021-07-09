@@ -52,10 +52,6 @@ lowball_config = config_from_file("/path/to/config.yaml")
 lowball = Lowball(config=lowball_config, auth_database=LowballArangoDBAuthDB)
 
 
-@lowball.route("/hello")
-def hello():
-    return {"Hello": "goodbyte"}, 200
-
 ```
 
 __Notes__
@@ -65,7 +61,6 @@ load which do not match the `Token` specification will be deleted.
 
 Multiple Lowball Applications should have no issue interacting with the same ArangoDB backend. However, you should be 
 wary
-
 
 
 
