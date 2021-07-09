@@ -5,7 +5,7 @@ Welcome to lowball-arangodb-authdb's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-This is a simple implementation of the specification for a `Lowball <https://github.com/EmersonElectricCo/lowball>`_
+A simple Authentication Database implementation of the specification for`Lowball <https://github.com/EmersonElectricCo/lowball>`_
 `AuthDatabase` provider leveraging ArangoDB.
 
 
@@ -75,12 +75,6 @@ Example Usage
     lowball_config = config_from_file("/path/to/config.yaml")
 
     lowball = Lowball(config=lowball_config, auth_database=LowballArangoDBAuthDB)
-
-
-    @lowball.route("/hello", methods=["GET"])
-    def hello():
-        return {"Hello": "good byte"}, 200
-
 
 
 Notes

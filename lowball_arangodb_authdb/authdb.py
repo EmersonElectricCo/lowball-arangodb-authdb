@@ -176,10 +176,7 @@ class LowballArangoDBAuthDB(AuthDatabase):
         if not isinstance(token_object, Token):
             raise TypeError("LowballArangoDBAuthDB received a non Token Object to add to the database")
 
-        try:
-            existing_token = self.collection.fetchDocument(token_object.token_id)
-        except DocumentNotFoundError:
-            existing_token = None
+        existing_token = self.lookup_token(token_object.token_id)
 
         if existing_token is not None:
             raise ValueError("Error during token creation. Attempt to create token with existing token id. Try Again.")

@@ -59,8 +59,8 @@ __Notes__
 The authentication database implementation expects to have a collection to itself. Documents it attempts to 
 load which do not match the `Token` specification will be deleted.
 
-Multiple Lowball Applications should have no issue interacting with the same ArangoDB backend. However, you should be 
-wary
+Multiple Lowball Applications should have no issue interacting with the same ArangoDB backend.
+
 
 
 
