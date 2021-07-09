@@ -1,0 +1,12 @@
+FROM python:3.7-alpine
+
+RUN apk update
+
+WORKDIR /test/
+
+ADD . /test/
+
+RUN pip3 install --upgrade pip; pip3 install -r requirements.txt
+
+RUN pytest -v --tb no tests/
+
